@@ -1,0 +1,70 @@
+<div
+  class="flex h-full w-full flex-col items-center justify-around sm:flex-row"
+>
+  <div class="grid aspect-square grid-cols-9 grid-rows-9 gap-0">
+    @for (row of table(); let r = $index; track r) {
+      @for (cell of row; let c = $index; track c) {
+        <div
+          class="relative flex aspect-square size-20 items-center justify-center border border-slate-300 p-0 sm:text-lg md:text-xl lg:text-2xl xl:text-3xl"
+          [class]="[
+            highlightedCell().r === r && highlightedCell().c === c
+              ? 'bg-blue-200'
+              : 'bg-white',
+            r % 3 === 0 ? 'border-t-slate-500' : '',
+            r === 8 ? 'border-b-slate-500' : '',
+            c % 3 === 0 ? 'border-l-slate-500' : '',
+            c === 8 ? 'border-r-slate-500' : '',
+            errorCell(r, c) ? 'text-red-500' : ''
+          ]"
+          [style]="{
+            backgroundColor: lightBlueHighlighted(r, c)
+              ? '#ebf8ff'
+              : lightlyHighlighted(r, c)
+                ? '#f0f4f8'
+                : ''
+          }"
+          (click)="onFocus(r, c)"
+        >
+          @if (originalTable[r][c] !== 0) {
+            {{ cell }}
+          } @else if (cell !== 0 && cell === solvedTable[r][c]) {
+            <div class="text-blue-500">{{ cell }}</div>
+          } @else if (cell !== 0) {
+            <div class="text-red-500">{{ cell }}</div>
+          } @else {
+            <div
+              class="grid h-full w-full grid-cols-3 grid-rows-3 gap-0 bg-transparent"
+            >
+              @for (noted of noteTable()[r][c]; let i = $index; track i) {
+                <div
+                  class="flex h-full w-full items-center justify-center text-xs"
+                  [class]="[
+                    noted && noteHighlighted(i + 1)
+                      ? 'bg-blue-100'
+                      : 'bg-transparent'
+                  ]"
+                >
+                  @if (noted) {
+                    {{ i + 1 }}
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <app-sudoku-controls
+    [noteMode]="noteMode()"
+    (noteModeChange)="toggleNoteMode()"
+    (undo)="onUndo()"
+    (erase)="erase()"
+  ></app-sudoku-controls>
+
+  <app-number-buttons
+    [numLeft]="numLeft()"
+    (numberClick)="onNumberClick($event)"
+  ></app-number-buttons>
+</div>

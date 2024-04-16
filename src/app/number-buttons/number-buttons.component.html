@@ -1,0 +1,13 @@
+<div class="flex flex-row sm:flex-col">
+  @for (num of numLeft(); let i = $index; track i) {
+    <div>
+      <button
+        class="items-between m-2 flex flex-col justify-center rounded-md bg-indigo-300 p-2 text-white"
+        (click)="onNumberClick(i)"
+      >
+        <p class="text-2xl">{{ i + 1 }}</p>
+        <p class="text-sm text-slate-300">{{ num }}</p>
+      </button>
+    </div>
+  }
+</div>
