@@ -10,7 +10,6 @@ import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.comp
 
 @Component({
   selector: 'app-sudoku-table',
-  standalone: true,
   imports: [NumberButtonsComponent, SudokuControlsComponent],
   templateUrl: './sudoku-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,20 +43,20 @@ export class SudokuTableComponent {
       return;
     }
     if (event.key === 'n') {
-      this.noteMode.set(!this.noteMode());
+      this.noteMode.update((n) => !n);
       return;
     }
     this.enterValue(event.key);
   }
 
-  moveHighlightedCell = (rowOffset: number, colOffset: number) => {
+  readonly moveHighlightedCell = (rowOffset: number, colOffset: number) => {
     const { r, c } = this.highlightedCell();
-    const newRow = (r + rowOffset) % 9;
-    const newCol = (c + colOffset) % 9;
+    const newRow = (r + rowOffset + 9) % 9;
+    const newCol = (c + colOffset + 9) % 9;
     this.highlightedCell.set({ r: newRow, c: newCol });
   };
 
-  solvedTable = [
+  readonly solvedTable = [
     [5, 3, 4, 6, 7, 8, 9, 1, 2],
     [6, 7, 2, 1, 9, 5, 3, 4, 8],
     [1, 9, 8, 3, 4, 2, 5, 6, 7],
@@ -69,7 +68,7 @@ export class SudokuTableComponent {
     [3, 4, 5, 2, 8, 6, 1, 7, 9],
   ];
 
-  originalTable = [
+  readonly originalTable = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
     [6, 0, 0, 1, 9, 5, 0, 0, 0],
     [0, 9, 8, 0, 0, 0, 0, 6, 0],
@@ -81,13 +80,13 @@ export class SudokuTableComponent {
     [0, 0, 0, 0, 8, 0, 0, 7, 9],
   ];
 
-  table = signal([...this.originalTable.map((row) => [...row])]);
-  noteMode = signal(false);
-  noteTable = signal<Array<Array<Array<boolean>>>>(
+  readonly table = signal([...this.originalTable.map((row) => [...row])]);
+  readonly noteMode = signal(false);
+  readonly noteTable = signal<Array<Array<Array<boolean>>>>(
     this.originalTable.map((row) => row.map(() => Array(9).fill(false))),
   );
 
-  moveHistory = signal<
+  readonly moveHistory = signal<
     Array<{
       r: number;
       c: number;
@@ -97,7 +96,7 @@ export class SudokuTableComponent {
     }>
   >([]);
 
-  numLeft = computed<number[]>(() => {
+  readonly numLeft = computed<number[]>(() => {
     return this.table()
       .flat()
       .reduce((acc, entry) => {
@@ -107,25 +106,25 @@ export class SudokuTableComponent {
       }, Array(9).fill(9));
   });
 
-  highlightedCell = signal({ r: -1, c: -1 });
+  readonly highlightedCell = signal({ r: -1, c: -1 });
 
-  highlightedCellValue = computed(() => {
+  readonly highlightedCellValue = computed(() => {
     const { r, c } = this.highlightedCell();
     if (r === -1 && c === -1) return 0;
     return this.table()[r][c];
   });
 
-  isSolved = computed(() => {
+  readonly isSolved = computed(() => {
     return this.numLeft().every((num) => num === 0);
   });
 
-  toggleNoteMode = () => {
+  readonly toggleNoteMode = () => {
     this.noteMode.update((n) => !n);
   };
 
-  enterValue = (strValue: string) => {
+  readonly enterValue = (strValue: string) => {
     const { r: row, c: col } = this.highlightedCell();
-    if (row === -1 && col === -1) {
+    if (row === -1 || col === -1) {
       console.error('No cell is selected');
       return;
     }
@@ -172,7 +171,7 @@ export class SudokuTableComponent {
     });
   };
 
-  displayNote = (row: number, col: number, num: number) => {
+  readonly displayNote = (row: number, col: number, num: number) => {
     return (
       this.noteTable()[row][col][num - 1] &&
       this.table()[row].every((entry) => entry !== num) &&
@@ -180,7 +179,7 @@ export class SudokuTableComponent {
     );
   };
 
-  removeValue = () => {
+  readonly removeValue = () => {
     const { r: row, c: col } = this.highlightedCell();
     if (row === -1 && col === -1) {
       console.error('No cell is selected');
@@ -205,7 +204,7 @@ export class SudokuTableComponent {
     });
   };
 
-  onUndo = () => {
+  readonly onUndo = () => {
     const lastMove = this.moveHistory().pop();
     if (!lastMove) return;
     const { r, c, value, note, delete: del } = lastMove;
@@ -229,7 +228,7 @@ export class SudokuTableComponent {
     });
   };
 
-  erase = () => {
+  readonly erase = () => {
     const { r, c } = this.highlightedCell();
     if (r === -1 && c === -1) return;
     if (this.originalTable[r][c] !== 0) return;
@@ -255,18 +254,18 @@ export class SudokuTableComponent {
     });
   };
 
-  onFocus = (row: number, col: number) => {
+  readonly onFocus = (row: number, col: number) => {
     this.highlightedCell.set({ r: row, c: col });
   };
 
-  lightlyHighlighted = (row: number, col: number) => {
+  readonly lightlyHighlighted = (row: number, col: number) => {
     const { r, c } = this.highlightedCell();
     if (r === -1 && c === -1) return false;
     if (r === row && c === col) return false;
     return r === row || c === col;
   };
 
-  lightBlueHighlighted = (row: number, col: number) => {
+  readonly lightBlueHighlighted = (row: number, col: number) => {
     const { r, c } = this.highlightedCell();
     if (r === -1 && c === -1) return false;
     if (r === row && c === col) return false;
@@ -276,20 +275,20 @@ export class SudokuTableComponent {
     );
   };
 
-  noteHighlighted = (num: number) => {
+  readonly noteHighlighted = (num: number) => {
     const { r, c } = this.highlightedCell();
     if (r === -1 && c === -1) return false;
     return this.highlightedCellValue() === num;
   };
 
-  errorCell = (row: number, col: number) => {
+  readonly errorCell = (row: number, col: number) => {
     return (
       this.table()[row][col] !== this.solvedTable[row][col] &&
       this.table()[row][col] !== 0
     );
   };
 
-  onNumberClick = (number: number) => {
+  readonly onNumberClick = (number: number) => {
     this.enterValue(String(number));
   };
 }

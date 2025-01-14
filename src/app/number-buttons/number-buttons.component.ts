@@ -2,23 +2,21 @@ import {
   Component,
   input,
   ChangeDetectionStrategy,
-  Output,
-  EventEmitter,
+  output,
 } from '@angular/core';
 
 @Component({
   selector: 'app-number-buttons',
-  standalone: true,
   imports: [],
   templateUrl: './number-buttons.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NumberButtonsComponent {
-  numLeft = input.required<number[]>();
+  readonly numLeft = input.required<number[]>();
 
-  @Output() numberClick = new EventEmitter<number>();
+  readonly numberClick = output<number>();
 
-  onNumberClick = (index: number) => {
+  readonly onNumberClick = (index: number) => {
     this.numberClick.emit(index + 1);
   };
 }

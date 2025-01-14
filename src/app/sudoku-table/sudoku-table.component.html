@@ -1,5 +1,5 @@
 <div
-  class="flex h-full w-full flex-col items-center justify-around sm:flex-row"
+  class="flex h-full w-full flex-col items-center justify-center gap-12 sm:flex-row"
 >
   <div class="grid aspect-square grid-cols-9 grid-rows-9 gap-0">
     @for (row of table(); let r = $index; track r) {
@@ -39,12 +39,12 @@
                 <div
                   class="flex h-full w-full items-center justify-center text-xs"
                   [class]="[
-                    noted && noteHighlighted(i + 1)
+                    noted && noteHighlighted(i + 1) && displayNote(r, c, i + 1)
                       ? 'bg-blue-100'
                       : 'bg-transparent'
                   ]"
                 >
-                  @if (noted) {
+                  @if (noted && displayNote(r, c, i + 1)) {
                     {{ i + 1 }}
                   }
                 </div>
@@ -56,15 +56,17 @@
     }
   </div>
 
-  <app-sudoku-controls
-    [noteMode]="noteMode()"
-    (noteModeChange)="toggleNoteMode()"
-    (undo)="onUndo()"
-    (erase)="erase()"
-  ></app-sudoku-controls>
+  <div class="flex items-center gap-12">
+    <app-sudoku-controls
+      [noteMode]="noteMode()"
+      (noteModeChange)="toggleNoteMode()"
+      (undo)="onUndo()"
+      (erase)="erase()"
+    ></app-sudoku-controls>
 
-  <app-number-buttons
-    [numLeft]="numLeft()"
-    (numberClick)="onNumberClick($event)"
-  ></app-number-buttons>
+    <app-number-buttons
+      [numLeft]="numLeft()"
+      (numberClick)="onNumberClick($event)"
+    ></app-number-buttons>
+  </div>
 </div>

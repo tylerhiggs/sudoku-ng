@@ -2,22 +2,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   input,
-  Output,
-  EventEmitter,
+  output,
 } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-sudoku-controls',
-  standalone: true,
-  imports: [MatIconModule],
   templateUrl: './sudoku-controls.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SudokuControlsComponent {
-  noteMode = input.required<boolean>();
+  readonly noteMode = input.required<boolean>();
 
-  @Output() noteModeChange = new EventEmitter<void>();
-  @Output() undo = new EventEmitter<void>();
-  @Output() erase = new EventEmitter<void>();
+  readonly noteModeChange = output<void>();
+  readonly undo = output<void>();
+  readonly erase = output<void>();
 }
