@@ -5,7 +5,7 @@
     @for (row of table(); let r = $index; track r) {
       @for (cell of row; let c = $index; track c) {
         <div
-          class="relative flex aspect-square size-20 items-center justify-center border border-slate-300 p-0 sm:text-lg md:text-xl lg:text-2xl xl:text-3xl"
+          class="relative flex aspect-square size-20 items-center justify-center border border-slate-300 p-0 hover:bg-blue-50 sm:text-lg md:text-xl lg:text-2xl xl:text-3xl"
           [class]="[
             highlightedCell().r === r && highlightedCell().c === c
               ? 'bg-blue-200'

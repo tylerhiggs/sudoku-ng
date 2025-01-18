@@ -42,7 +42,7 @@ export class SudokuTableComponent {
       this.removeValue();
       return;
     }
-    if (event.key === 'n') {
+    if (event.key === 'p') {
       this.noteMode.update((n) => !n);
       return;
     }
