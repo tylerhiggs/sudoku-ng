@@ -5,10 +5,24 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideExperimentalZonelessChangeDetection(),
+    provideFirebaseApp(() =>
+      initializeApp({
+        projectId: 'sudoku-6fbd2',
+        appId: '1:659641408003:web:9b0e763115986958dd0c36',
+        storageBucket: 'sudoku-6fbd2.firebasestorage.app',
+        apiKey: 'AIzaSyDBHbi0TcZDoDQYSF9MMJ4nLDyKK3F-BZ4',
+        authDomain: 'sudoku-6fbd2.firebaseapp.com',
+        messagingSenderId: '659641408003',
+        measurementId: 'G-S5ZV5RSP9J',
+      }),
+    ),
+    provideFirestore(() => getFirestore()),
   ],
 };

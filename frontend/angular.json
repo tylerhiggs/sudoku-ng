@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "SudokuNg": {
+    "sudoku": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -49,10 +49,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "SudokuNg:build:production"
+              "buildTarget": "sudoku:build:production"
             },
             "development": {
-              "buildTarget": "SudokuNg:build:development"
+              "buildTarget": "sudoku:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -60,7 +60,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "SudokuNg:build"
+            "buildTarget": "sudoku:build"
           }
         },
         "test": {
