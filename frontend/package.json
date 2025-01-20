@@ -1,6 +1,8 @@
 {
   "name": "sudoku-ng",
   "version": "0.0.0",
+  "author": "Tyler Higgs",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
