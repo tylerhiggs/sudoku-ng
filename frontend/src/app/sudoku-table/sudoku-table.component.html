@@ -14,20 +14,29 @@
             r === 8 ? 'border-b-slate-500' : '',
             c % 3 === 0 ? 'border-l-slate-500' : '',
             c === 8 ? 'border-r-slate-500' : '',
-            errorCell(r, c) ? 'text-red-500' : ''
+            errorCell(r, c) ? 'text-red-500' : '',
           ]"
           [style]="{
             backgroundColor: lightBlueHighlighted(r, c)
               ? '#ebf8ff'
               : lightlyHighlighted(r, c)
                 ? '#f0f4f8'
-                : ''
+                : '',
           }"
           (click)="onFocus(r, c)"
         >
-          @if (originalTable[r][c] !== 0) {
+          @if (
+            originalTable() &&
+            originalTable()![r] &&
+            originalTable()![r][c] !== 0
+          ) {
             {{ cell }}
-          } @else if (cell !== 0 && cell === solvedTable[r][c]) {
+          } @else if (
+            cell !== 0 &&
+            solvedTable() &&
+            solvedTable()![r] &&
+            cell === solvedTable()![r][c]
+          ) {
             <div class="text-blue-500">{{ cell }}</div>
           } @else if (cell !== 0) {
             <div class="text-red-500">{{ cell }}</div>
@@ -41,7 +50,7 @@
                   [class]="[
                     noted && noteHighlighted(i + 1) && displayNote(r, c, i + 1)
                       ? 'bg-blue-100'
-                      : 'bg-transparent'
+                      : 'bg-transparent',
                   ]"
                 >
                   @if (noted && displayNote(r, c, i + 1)) {

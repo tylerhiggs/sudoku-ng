@@ -4,11 +4,12 @@ import {
   collectionData,
   Firestore,
   limit,
+  orderBy,
   query,
   where,
 } from '@angular/fire/firestore';
 import { firstValueFrom, Observable } from 'rxjs';
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
 export type SudokuEntryFirebase = {
   puzzle: number[];
@@ -23,12 +24,12 @@ export class FirebaseService {
   readonly firestore = inject(Firestore);
 
   public async getRandomPuzzle(difficulty: Difficulty) {
-    const puzzlesStarted: string[] = []; // TODO: get from indexed db
+    const puzzlesStarted: string[] = ['0']; // TODO: get from indexed db
     const collectionRef = collection(this.firestore, difficulty);
     const queryRef = query(
       collectionRef,
-      where('hash', '>=', '0'),
       where('hash', 'not-in', puzzlesStarted),
+      orderBy('hash'),
       limit(1),
     );
     try {
@@ -36,6 +37,7 @@ export class FirebaseService {
         collectionData(queryRef) as Observable<SudokuEntryFirebase[]>,
       );
       if (snapshot.length === 0) {
+        console.error('No puzzles found');
         return null;
       }
       return {

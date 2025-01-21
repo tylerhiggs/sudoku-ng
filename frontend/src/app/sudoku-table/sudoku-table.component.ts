@@ -4,6 +4,8 @@ import {
   computed,
   signal,
   HostListener,
+  input,
+  linkedSignal,
 } from '@angular/core';
 import { NumberButtonsComponent } from '../number-buttons/number-buttons.component';
 import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.component';
@@ -15,6 +17,9 @@ import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SudokuTableComponent {
+  readonly originalTable = input<number[][]>();
+  readonly solvedTable = input<number[][]>();
+
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     event.stopImmediatePropagation();
@@ -56,34 +61,14 @@ export class SudokuTableComponent {
     this.highlightedCell.set({ r: newRow, c: newCol });
   };
 
-  readonly solvedTable = [
-    [5, 3, 4, 6, 7, 8, 9, 1, 2],
-    [6, 7, 2, 1, 9, 5, 3, 4, 8],
-    [1, 9, 8, 3, 4, 2, 5, 6, 7],
-    [8, 5, 9, 7, 6, 1, 4, 2, 3],
-    [4, 2, 6, 8, 5, 3, 7, 9, 1],
-    [7, 1, 3, 9, 2, 4, 8, 5, 6],
-    [9, 6, 1, 5, 3, 7, 2, 8, 4],
-    [2, 8, 7, 4, 1, 9, 6, 3, 5],
-    [3, 4, 5, 2, 8, 6, 1, 7, 9],
-  ];
-
-  readonly originalTable = [
-    [5, 3, 0, 0, 7, 0, 0, 0, 0],
-    [6, 0, 0, 1, 9, 5, 0, 0, 0],
-    [0, 9, 8, 0, 0, 0, 0, 6, 0],
-    [8, 0, 0, 0, 6, 0, 0, 0, 3],
-    [4, 0, 0, 8, 0, 3, 0, 0, 1],
-    [7, 0, 0, 0, 2, 0, 0, 0, 6],
-    [0, 6, 0, 0, 0, 0, 2, 8, 0],
-    [0, 0, 0, 4, 1, 9, 0, 0, 5],
-    [0, 0, 0, 0, 8, 0, 0, 7, 9],
-  ];
-
-  readonly table = signal([...this.originalTable.map((row) => [...row])]);
+  readonly table = linkedSignal(() => [
+    ...(this.originalTable() ?? []).map((row) => [...row]),
+  ]);
   readonly noteMode = signal(false);
-  readonly noteTable = signal<Array<Array<Array<boolean>>>>(
-    this.originalTable.map((row) => row.map(() => Array(9).fill(false))),
+  readonly noteTable = linkedSignal<Array<Array<Array<boolean>>>>(() =>
+    (this.originalTable() ?? []).map((row) =>
+      row.map(() => Array(9).fill(false)),
+    ),
   );
 
   readonly moveHistory = signal<
@@ -137,7 +122,7 @@ export class SudokuTableComponent {
       console.error('Input is not between 1 and 9', value);
       return;
     }
-    if (this.originalTable[row][col] !== 0) {
+    if (this.originalTable() && this.originalTable()![row][col] !== 0) {
       console.error('Cell is not empty');
       return;
     }
@@ -185,12 +170,15 @@ export class SudokuTableComponent {
       console.error('No cell is selected');
       return;
     }
-    if (this.originalTable[row][col] !== 0) {
+    if (this.originalTable() && this.originalTable()![row][col] !== 0) {
       console.error('Cell is not empty');
       return;
     }
     const currentValue = this.table()[row][col];
-    if (this.originalTable[row][col] === currentValue) {
+    if (
+      this.originalTable() &&
+      this.originalTable()![row][col] === currentValue
+    ) {
       console.error('Cell is already filled with the correct value');
       return;
     }
@@ -231,7 +219,7 @@ export class SudokuTableComponent {
   readonly erase = () => {
     const { r, c } = this.highlightedCell();
     if (r === -1 && c === -1) return;
-    if (this.originalTable[r][c] !== 0) return;
+    if (this.originalTable() && this.originalTable()![r][c] !== 0) return;
     const prev = this.highlightedCellValue();
     this.table.update((t) => {
       t[r][c] = 0;
@@ -283,7 +271,8 @@ export class SudokuTableComponent {
 
   readonly errorCell = (row: number, col: number) => {
     return (
-      this.table()[row][col] !== this.solvedTable[row][col] &&
+      this.solvedTable() &&
+      this.table()[row][col] !== this.solvedTable()![row][col] &&
       this.table()[row][col] !== 0
     );
   };

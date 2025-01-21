@@ -1,5 +1,41 @@
 <main class="h-screen w-full">
-  <app-sudoku-table></app-sudoku-table>
+  @if (solved() && puzzle() && !loading()) {
+    <app-sudoku-table
+      [originalTable]="puzzle()!"
+      [solvedTable]="solved()!"
+    ></app-sudoku-table>
+  } @else {
+    <div class="flex h-full flex-col items-center justify-center space-y-4">
+      <button
+        [disabled]="loading()"
+        class="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-gray-200 disabled:text-stone-700"
+        (click)="openPuzzle('easy')"
+      >
+        Solve Easy Puzzle
+      </button>
+      <button
+        [disabled]="loading()"
+        class="rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700 disabled:bg-gray-200 disabled:text-stone-700"
+        (click)="openPuzzle('medium')"
+      >
+        Solve Medium Puzzle
+      </button>
+      <button
+        [disabled]="loading()"
+        class="rounded bg-yellow-500 px-4 py-2 font-bold text-white hover:bg-yellow-700 disabled:bg-gray-200 disabled:text-stone-700"
+        (click)="openPuzzle('hard')"
+      >
+        Solve Hard Puzzle
+      </button>
+      <button
+        [disabled]="loading()"
+        class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 disabled:bg-gray-200 disabled:text-stone-700"
+        (click)="openPuzzle('expert')"
+      >
+        Solve Expert Puzzle
+      </button>
+    </div>
+  }
 </main>
 
 <router-outlet />

@@ -1,17 +1,63 @@
 use rand::{seq::SliceRandom, Rng};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use tokio;
+
+const HOLES_EXPERT: usize = 56;
+const HOLES_HARD: usize = 52;
+const HOLES_MEDIUM: usize = 40;
+const HOLES_EASY: usize = 32;
 
 fn main() {
-    println!("Hello, world!");
-    let solved = create_solved_table();
-    let mut table = solved.clone();
-    print_table(&solved);
-    remove_numbers(&mut table, 52);
-    println!();
-    print_table(&table);
-    println!();
-    println!("{}", hash_table(&table));
+    // console input
+    let args: Vec<String> = std::env::args().collect();
+    let difficulty = if args.len() > 1 {
+        args[1].as_str()
+    } else {
+        "hard"
+    };
+    let holes = match difficulty {
+        "expert" => HOLES_EXPERT,
+        "hard" => HOLES_HARD,
+        "medium" => HOLES_MEDIUM,
+        "easy" => HOLES_EASY,
+        _ => HOLES_HARD,
+    };
+    let num_puzzles = if args.len() > 2 {
+        args[2].parse::<usize>().unwrap()
+    } else {
+        1
+    };
+    let mut entries = Vec::new();
+    for _ in 0..num_puzzles {
+        let solved = create_solved_table();
+        let mut table = solved.clone();
+        print_table(&solved);
+        let success = remove_numbers(&mut table, holes);
+        if !success {
+            println!("Failed to remove numbers!");
+            continue;
+        }
+        println!();
+        print_table(&table);
+        println!();
+        println!("{}", hash_table(&table));
+
+        entries.push(SudokuEntry {
+            puzzle: table,
+            solution: solved,
+            hash: hash_table(&table),
+        });
+    }
+
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.block_on(async {
+        send_sudoku_data(SudokuData { entries }, difficulty)
+            .await
+            .unwrap();
+    });
+
+    println!("Done!");
 }
 
 fn create_solved_table() -> [[u8; 9]; 9] {
@@ -67,7 +113,7 @@ fn used_in_box(table: &[[u8; 9]; 9], box_start_row: usize, box_start_col: usize,
     false
 }
 
-fn remove_numbers(table: &mut [[u8; 9]; 9], count: usize) {
+fn remove_numbers(table: &mut [[u8; 9]; 9], count: usize) -> bool {
     let mut rng = rand::thread_rng();
     let mut attempts = 0;
     let mut removed = 0;
@@ -88,13 +134,7 @@ fn remove_numbers(table: &mut [[u8; 9]; 9], count: usize) {
         }
         attempts += 1;
     }
-    if removed == count {
-        println!("Removed {} numbers in {} attempts", count, attempts);
-        return true;
-    } else {
-        println!("Failed to remove {} numbers", count);
-        return false;
-    }
+    return removed == count;
 }
 
 fn is_unique_solution(table: &[[u8; 9]; 9]) -> bool {
@@ -153,4 +193,41 @@ fn hash_table(table: &[[u8; 9]; 9]) -> u64 {
     let mut hasher = DefaultHasher::new();
     table.hash(&mut hasher);
     hasher.finish()
+}
+
+#[derive(serde::Serialize)]
+struct SudokuEntry {
+    puzzle: [[u8; 9]; 9],
+    solution: [[u8; 9]; 9],
+    hash: u64,
+}
+
+#[derive(serde::Serialize)]
+struct SudokuData {
+    entries: Vec<SudokuEntry>,
+}
+
+async fn send_sudoku_data(
+    entries: SudokuData,
+    difficulty: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = reqwest::Client::new();
+    let res = client
+        .post(&format!("http://localhost:6969/{}", difficulty))
+        .header("Content-Type", "application/json")
+        .json(&entries)
+        .send()
+        .await?;
+
+    if res.status().is_success() {
+        println!("Data sent successfully!");
+    } else {
+        println!(
+            "Failed to send data: {} - {}",
+            res.status(),
+            res.text().await?
+        );
+    }
+
+    Ok(())
 }
