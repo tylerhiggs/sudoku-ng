@@ -142,7 +142,7 @@ fn is_unique_solution(table: &[[u8; 9]; 9]) -> bool {
     solve(&mut table_copy, 0, 0, 0) == 1
 }
 
-fn solve(table: &mut [[u8; 9]; 9], row: usize, col: usize, count: usize) -> usize {
+fn solve(table: &mut [[u8; 9]; 9], row: usize, col: usize, mut count: usize) -> usize {
     if row == 9 {
         return count + 1;
     }
@@ -163,8 +163,10 @@ fn solve(table: &mut [[u8; 9]; 9], row: usize, col: usize, count: usize) -> usiz
             table[row][col] = num;
             let new_count = solve(table, row, col + 1, count);
             if new_count > count {
-                table[row][col] = 0;
-                return new_count;
+                count = new_count;
+                if count > 1 {
+                    return count;
+                }
             }
             table[row][col] = 0;
         }
@@ -230,4 +232,58 @@ async fn send_sudoku_data(
     }
 
     Ok(())
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_solve_unique_solution() {
+        let mut table = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9],
+        ];
+        assert_eq!(solve(&mut table, 0, 0, 0), 1);
+    }
+
+    #[test]
+    fn test_solve_multiple_solutions() {
+        let mut table = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 0, 0],
+        ];
+        table[8][8] = 0; // Make the puzzle have multiple solutions
+        assert!(solve(&mut table, 0, 0, 0) > 1);
+    }
+
+    #[test]
+    fn test_solve_no_solution() {
+        let mut table = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9],
+        ];
+        table[0][0] = 9; // Make the puzzle unsolvable
+        assert_eq!(solve(&mut table, 0, 0, 0), 0);
+    }
 }

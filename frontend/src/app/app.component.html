@@ -3,6 +3,10 @@
     <app-sudoku-table
       [originalTable]="puzzle()!"
       [solvedTable]="solved()!"
+      [noteTable]="noteTable()"
+      [table]="table()!"
+      (updateTable)="updateTable($event)"
+      (toggleNoteTable)="toggleNoteTable($event)"
     ></app-sudoku-table>
   } @else {
     <div class="flex h-full flex-col items-center justify-center space-y-4">
