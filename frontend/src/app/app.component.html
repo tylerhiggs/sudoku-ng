@@ -1,5 +1,9 @@
 <main class="h-screen w-full">
   @if (solved() && puzzle() && !loading()) {
+    <app-puzzle-nav
+      (navToHome)="reset(false)"
+      (do)="testSolve()"
+    ></app-puzzle-nav>
     <app-sudoku-table
       [originalTable]="puzzle()!"
       [solvedTable]="solved()!"
@@ -40,6 +44,18 @@
       </button>
     </div>
   }
+  <app-victory-dialog
+    [open]="isSolved() && !loading() && victoryDialogOpen()"
+    (onRestart)="reset()"
+    (onClose)="victoryDialogOpen.set(false)"
+  ></app-victory-dialog>
+  <app-confirmation-dialog
+    [open]="confirmationDialogOpen()"
+    [title]="confirmationTitle()"
+    [message]="confirmationMessage()"
+    (onConfirm)="confirmReset()"
+    (onClose)="confirmationDialogOpen.set(false)"
+  ></app-confirmation-dialog>
 </main>
 
 <router-outlet />

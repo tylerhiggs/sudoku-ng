@@ -9,6 +9,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { firstValueFrom, Observable } from 'rxjs';
+import { IndexedDbCompletedService } from './indexed-db-completed.service';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
 export type SudokuEntryFirebase = {
@@ -22,13 +23,15 @@ export type SudokuEntryFirebase = {
 })
 export class FirebaseService {
   readonly firestore = inject(Firestore);
+  readonly IndexedDbCompletedService = inject(IndexedDbCompletedService);
 
   public async getRandomPuzzle(difficulty: Difficulty) {
-    const puzzlesStarted: string[] = ['0']; // TODO: get from indexed db
+    const puzzlesStarted = await this.IndexedDbCompletedService.getAllHashes();
+    console.log('puzzlesStarted', puzzlesStarted);
     const collectionRef = collection(this.firestore, difficulty);
     const queryRef = query(
       collectionRef,
-      where('hash', 'not-in', puzzlesStarted),
+      where('hash', 'not-in', puzzlesStarted.length ? puzzlesStarted : ['0']),
       orderBy('hash'),
       limit(1),
     );
