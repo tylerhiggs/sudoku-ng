@@ -1,43 +1,52 @@
 <main class="h-screen w-full">
-  @if (solved() && puzzle() && !loading()) {
+  @if (solved() && originalPuzzle() && !loading() && !mainMenuOpen()) {
     <app-puzzle-nav
       (navToHome)="reset(false)"
       (do)="testSolve()"
     ></app-puzzle-nav>
     <app-sudoku-table
-      [originalTable]="puzzle()!"
+      [originalTable]="originalPuzzle()!"
       [solvedTable]="solved()!"
       [noteTable]="noteTable()"
       [table]="table()!"
       (updateTable)="updateTable($event)"
       (toggleNoteTable)="toggleNoteTable($event)"
     ></app-sudoku-table>
-  } @else if (!loading()) {
+  } @else if (!loading() && mainMenuOpen()) {
     <div class="flex h-full flex-col items-center justify-center space-y-4">
+      @if (originalPuzzle()) {
+        <button
+          [disabled]="loading()"
+          class="rounded-sm bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 px-4 py-2 font-bold text-white hover:from-purple-500 hover:via-pink-600 hover:to-red-600 disabled:bg-gray-200 disabled:text-stone-700"
+          (click)="mainMenuOpen.set(false)"
+        >
+          Continue Puzzle
+        </button>
+      }
       <button
         [disabled]="loading()"
-        class="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-gray-200 disabled:text-stone-700"
+        class="rounded-sm bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-gray-200 disabled:text-stone-700"
         (click)="openPuzzle('easy')"
       >
         Solve Easy Puzzle
       </button>
       <button
         [disabled]="loading()"
-        class="rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700 disabled:bg-gray-200 disabled:text-stone-700"
+        class="rounded-sm bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700 disabled:bg-gray-200 disabled:text-stone-700"
         (click)="openPuzzle('medium')"
       >
         Solve Medium Puzzle
       </button>
       <button
         [disabled]="loading()"
-        class="rounded bg-yellow-500 px-4 py-2 font-bold text-white hover:bg-yellow-700 disabled:bg-gray-200 disabled:text-stone-700"
+        class="rounded-sm bg-yellow-500 px-4 py-2 font-bold text-white hover:bg-yellow-700 disabled:bg-gray-200 disabled:text-stone-700"
         (click)="openPuzzle('hard')"
       >
         Solve Hard Puzzle
       </button>
       <button
         [disabled]="loading()"
-        class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 disabled:bg-gray-200 disabled:text-stone-700"
+        class="rounded-sm bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 disabled:bg-gray-200 disabled:text-stone-700"
         (click)="openPuzzle('expert')"
       >
         Solve Expert Puzzle

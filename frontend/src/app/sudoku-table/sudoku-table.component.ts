@@ -48,7 +48,7 @@ export class SudokuTableComponent {
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     event.stopImmediatePropagation();
-    event.preventDefault();
+
     if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       this.onUndo();
@@ -56,9 +56,11 @@ export class SudokuTableComponent {
     }
     if (event.key === 'ArrowUp') {
       this.moveHighlightedCell(-1, 0);
+      event.preventDefault();
       return;
     }
     if (event.key === 'ArrowDown') {
+      event.preventDefault();
       this.moveHighlightedCell(1, 0);
       return;
     }

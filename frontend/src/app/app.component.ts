@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component, effect, signal, untracked } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { SudokuTableComponent } from './sudoku-table/sudoku-table.component';
@@ -22,10 +22,11 @@ import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  readonly puzzle = signal<number[][] | null>(null);
+  readonly originalPuzzle = signal<number[][] | null>(null);
   readonly solved = signal<number[][] | null>(null);
   readonly table = signal<number[][] | null>(null);
   readonly hash = signal<number | null>(null);
+  readonly mainMenuOpen = signal<boolean>(true);
   readonly noteTable = signal<boolean[][][]>(
     Array.from({ length: 9 }, () =>
       Array.from({ length: 9 }, () => Array(9).fill(false)),
@@ -45,7 +46,7 @@ export class AppComponent {
   ) {
     const localPuzzle = localStorage.getItem('currentPuzzle');
     if (localPuzzle) {
-      this.puzzle.set(JSON.parse(localPuzzle));
+      this.originalPuzzle.set(JSON.parse(localPuzzle));
     }
     const localSolved = localStorage.getItem('currentSolved');
     if (localSolved) {
@@ -64,11 +65,25 @@ export class AppComponent {
       this.hash.set(JSON.parse(localHash));
     }
 
+    if (
+      localHash ||
+      localNoteTable ||
+      localTable ||
+      localSolved ||
+      localPuzzle
+    ) {
+      this.mainMenuOpen.set(false);
+    }
+
     effect(() => {
-      if (!this.puzzle()) {
+      if (!this.originalPuzzle()) {
         return;
       }
-      localStorage.setItem('currentPuzzle', JSON.stringify(this.puzzle()));
+      localStorage.setItem(
+        'currentPuzzle',
+        JSON.stringify(this.originalPuzzle()),
+      );
+      console.log('puzzle', this.originalPuzzle());
     });
 
     effect(() => {
@@ -76,6 +91,7 @@ export class AppComponent {
         return;
       }
       localStorage.setItem('currentSolved', JSON.stringify(this.solved()));
+      console.log('solved', this.solved());
     });
 
     effect(() => {
@@ -83,6 +99,10 @@ export class AppComponent {
         return;
       }
       localStorage.setItem('currentTable', JSON.stringify(this.table()));
+      console.log('table', this.table());
+      untracked(() => {
+        console.log('within untracked', this.originalPuzzle());
+      });
     });
 
     effect(() => {
@@ -137,14 +157,13 @@ export class AppComponent {
     this.loading.set(true);
     const puzzle = await this.firebaseService.getRandomPuzzle(difficulty);
     if (puzzle) {
-      this.puzzle.set([...puzzle.puzzle]);
-      this.solved.set(puzzle.solution);
-      this.table.set([...puzzle.puzzle]);
+      this.originalPuzzle.set([...puzzle.puzzle.map((r) => [...r])]);
+      this.solved.set([...puzzle.solution]);
+      this.table.set([...puzzle.puzzle.map((r) => [...r])]);
       this.hash.set(parseInt(puzzle.hash));
+      this.mainMenuOpen.set(false);
     }
-    setTimeout(() => {
-      this.loading.set(false);
-    }, 0);
+    this.loading.set(false);
   };
 
   readonly updateTable = ({
@@ -192,7 +211,10 @@ export class AppComponent {
     return table.every((r, i) => r.every((c, j) => c === solved[i][j]));
   };
 
-  readonly reset = (removeFromLocal: boolean = true) => {
+  readonly reset = (removeFromLocal = true) => {
+    this.mainMenuOpen.set(true);
+    this.victoryDialogOpen.set(false);
+    if (!removeFromLocal) return;
     this.table.set(null);
     this.noteTable.set(
       Array.from({ length: 9 }, () =>
@@ -201,9 +223,8 @@ export class AppComponent {
     );
     this.hash.set(null);
     this.solved.set(null);
-    this.puzzle.set(null);
-    this.victoryDialogOpen.set(false);
-    if (!removeFromLocal) return;
+    this.originalPuzzle.set(null);
+
     localStorage.removeItem('currentPuzzle');
     localStorage.removeItem('currentSolved');
     localStorage.removeItem('currentTable');
