@@ -137,9 +137,9 @@ export class AppComponent {
     this.loading.set(true);
     const puzzle = await this.firebaseService.getRandomPuzzle(difficulty);
     if (puzzle) {
-      this.puzzle.set(puzzle.puzzle);
+      this.puzzle.set([...puzzle.puzzle]);
       this.solved.set(puzzle.solution);
-      this.table.set(puzzle.puzzle);
+      this.table.set([...puzzle.puzzle]);
       this.hash.set(parseInt(puzzle.hash));
     }
     setTimeout(() => {

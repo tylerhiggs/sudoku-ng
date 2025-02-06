@@ -2,7 +2,7 @@
   @for (num of numLeft(); let i = $index; track i) {
     <div>
       <button
-        class="items-between m-2 flex flex-col justify-center rounded-md bg-indigo-400 p-2 text-white hover:bg-indigo-500 hover:shadow disabled:bg-gray-300 disabled:text-gray-500"
+        class="m-2 flex flex-col items-center justify-center rounded-md bg-indigo-400 p-2 text-white hover:bg-indigo-500 hover:shadow disabled:bg-gray-300 disabled:text-gray-500"
         (click)="onNumberClick(i)"
         [disabled]="!num"
       >
