@@ -47,8 +47,6 @@ export class SudokuTableComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    event.stopImmediatePropagation();
-
     if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       this.onUndo();

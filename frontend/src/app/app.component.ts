@@ -1,4 +1,4 @@
-import { Component, effect, signal, untracked } from '@angular/core';
+import { Component, computed, effect, signal, untracked } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { SudokuTableComponent } from './sudoku-table/sudoku-table.component';
@@ -33,7 +33,10 @@ export class AppComponent {
     ),
   );
   readonly loading = signal<boolean>(false);
-  readonly victoryDialogOpen = signal<boolean>(true);
+  readonly showVictoryDialog = signal<boolean>(true);
+  readonly isVictoryDialogOpen = computed(() => {
+    return this.showVictoryDialog() && this.isSolved() && !this.loading();
+  });
   readonly confirmationDialogOpen = signal<boolean>(false);
   readonly confirmationTitle = signal<string>('Are you sure?');
   readonly confirmationMessage = signal<string>(
@@ -213,7 +216,7 @@ export class AppComponent {
 
   readonly reset = (removeFromLocal = true) => {
     this.mainMenuOpen.set(true);
-    this.victoryDialogOpen.set(false);
+    this.showVictoryDialog.set(true);
     if (!removeFromLocal) return;
     this.table.set(null);
     this.noteTable.set(
@@ -230,18 +233,6 @@ export class AppComponent {
     localStorage.removeItem('currentTable');
     localStorage.removeItem('currentNoteTable');
     localStorage.removeItem('currentHash');
-  };
-
-  readonly testSolve = async () => {
-    const hash = this.hash();
-    if (hash) {
-      try {
-        await this.indexedDbService.addRow(hash);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    this.reset();
   };
 
   readonly confirmReset = () => {
