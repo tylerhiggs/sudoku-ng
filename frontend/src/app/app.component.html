@@ -13,6 +13,7 @@
       (toggleNoteTable)="toggleNoteTable($event)"
     ></app-sudoku-table>
   } @else if (!loading() && mainMenuOpen()) {
+    <h1 class="mb-4 text-center text-4xl font-bold">Sudoku</h1>
     <div class="flex h-full flex-col items-center justify-center space-y-4">
       @if (originalPuzzle()) {
         <button
