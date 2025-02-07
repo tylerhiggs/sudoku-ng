@@ -21,3 +21,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SUDOKU_6FBD2 }}
           channelId: live
           projectId: sudoku-6fbd2
+          entryPoint: ./frontend
