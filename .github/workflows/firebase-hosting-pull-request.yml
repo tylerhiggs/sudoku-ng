@@ -7,13 +7,16 @@ permissions:
   checks: write
   contents: read
   pull-requests: write
+defaults:
+  run:
+    working-directory: frontend
 jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cd frontend && npm ci --force && npm run build --force
+      - run: npm ci --force && npm run build --force
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
