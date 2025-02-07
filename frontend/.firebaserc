@@ -1,6 +1,7 @@
 {
   "projects": {
-    "sudoku-ng": "sudoku-6fbd2"
+    "sudoku-ng": "sudoku-6fbd2",
+    "default": "sudoku-6fbd2"
   },
   "targets": {},
   "etags": {}
