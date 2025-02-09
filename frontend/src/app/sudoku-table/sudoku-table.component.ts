@@ -5,8 +5,6 @@ import {
   signal,
   HostListener,
   input,
-  linkedSignal,
-  effect,
   output,
 } from '@angular/core';
 import { NumberButtonsComponent } from '../number-buttons/number-buttons.component';
@@ -16,6 +14,7 @@ import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.comp
   selector: 'app-sudoku-table',
   imports: [NumberButtonsComponent, SudokuControlsComponent],
   templateUrl: './sudoku-table.component.html',
+  styleUrl: './sudoku-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SudokuTableComponent {

@@ -1,0 +1,21 @@
+@import "tailwindcss";
+.cell-error {
+  color: theme("colors.rose.300");
+}
+
+.cell-same-row:not(:hover),
+.cell-same-column:not(:hover) {
+  background-color: theme("colors.gray.100");
+}
+
+.cell-same-number:not(:hover) {
+  background-color: theme("colors.blue.100");
+}
+
+.cell-same-number.note-mode:not(:hover) {
+  background-color: theme("colors.emerald.100");
+}
+
+.cell-hover.note-mode:hover {
+  background-color: theme("colors.emerald.200");
+}

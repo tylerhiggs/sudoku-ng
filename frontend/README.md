@@ -1,4 +1,4 @@
-# SudokuNg
+# [SudokuNg](https://sudoku-6fbd2.web.app/)
 
 Angular app for playing Sudoku puzzles.
 

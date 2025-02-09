@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+.button-background {
+  background-color: theme("colors.indigo.400");
+}
+
+.button-background:hover {
+  background-color: theme("colors.indigo.500");
+}
+.button-background:active {
+  background-color: theme("colors.indigo.600");
+}
+.button-background:focus {
+  background-color: theme("colors.indigo.500");
+}
+
+.button-background.note-mode {
+  background-color: theme("colors.emerald.400");
+}
+.button-background.note-mode:hover {
+  background-color: theme("colors.emerald.500");
+}
+
+.button-background.note-mode:active {
+  background-color: theme("colors.emerald.600");
+}
+
+.button-background.note-mode:focus {
+  background-color: theme("colors.emerald.500");
+}

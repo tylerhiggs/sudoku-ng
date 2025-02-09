@@ -5,24 +5,25 @@
     @for (row of table(); let r = $index; track r) {
       @for (cell of row; let c = $index; track c) {
         <div
-          class="relative flex aspect-square size-20 items-center justify-center border border-slate-300 p-0 hover:bg-blue-50 sm:text-lg md:text-xl lg:text-2xl xl:text-3xl"
+          class="cell-hover relative flex aspect-square size-20 items-center justify-center border border-slate-300 p-0 hover:bg-blue-200 sm:text-lg md:text-xl lg:text-2xl xl:text-3xl"
           [class]="[
+            lightBlueHighlighted(r, c)
+              ? 'cell-same-number'
+              : lightlyHighlighted(r, c)
+                ? 'cell-same-column'
+                : '',
+            noteMode() ? 'note-mode' : '',
             highlightedCell().r === r && highlightedCell().c === c
-              ? 'bg-blue-200'
-              : 'bg-white',
+              ? noteMode()
+                ? 'bg-emerald-200'
+                : 'not-hover:bg-blue-200'
+              : 'not-hover:bg-white',
             r % 3 === 0 ? 'border-t-slate-500' : '',
             r === 8 ? 'border-b-slate-500' : '',
             c % 3 === 0 ? 'border-l-slate-500' : '',
             c === 8 ? 'border-r-slate-500' : '',
             errorCell(r, c) ? 'text-red-500' : '',
           ]"
-          [style]="{
-            backgroundColor: lightBlueHighlighted(r, c)
-              ? '#ebf8ff'
-              : lightlyHighlighted(r, c)
-                ? '#f0f4f8'
-                : '',
-          }"
           (click)="onFocus(r, c)"
         >
           @if (
@@ -75,6 +76,7 @@
 
     <app-number-buttons
       [numLeft]="numLeft()"
+      [noteMode]="noteMode()"
       (numberClick)="onNumberClick($event)"
     ></app-number-buttons>
   </div>

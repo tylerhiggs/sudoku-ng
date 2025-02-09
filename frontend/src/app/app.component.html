@@ -1,5 +1,4 @@
 <main class="h-screen w-full">
-  isSolved: {{ isSolved() }}
   @if (solved() && originalPuzzle() && !loading() && !mainMenuOpen()) {
     <div [class.inert]="isVictoryDialogOpen()">
       <app-puzzle-nav (navToHome)="reset(false)"></app-puzzle-nav>
