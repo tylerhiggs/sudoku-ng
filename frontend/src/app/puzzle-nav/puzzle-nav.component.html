@@ -1,7 +1,10 @@
-<header class="flex w-full items-center justify-end gap-2 px-6 py-2">
+<header class="flex w-full items-center justify-end gap-6 px-6 py-2">
+  <div class="font-bold" id="timer">
+    {{ timeString() }}
+  </div>
   <button
     tabindex="0"
-    class="rounded-sm bg-linear-to-tr from-blue-500 to-purple-500 px-4 py-2 font-bold text-white hover:from-blue-700 hover:to-purple-900"
+    class="cursor-pointer rounded-sm bg-linear-to-tr from-blue-500 to-purple-500 px-4 py-2 font-bold text-white hover:from-blue-700 hover:to-purple-900"
     (click)="navToHome.emit()"
   >
     Back

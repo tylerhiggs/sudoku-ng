@@ -29,10 +29,10 @@ cargo run --release
 You can specify the difficulty level and number of puzzles to generate by passing an argument:
 
 ```sh
-cargo run --release -- easy 100
+cargo run --release -- easy 50
 cargo run --release -- medium 50
-cargo run --release -- hard 30
-cargo run --release -- expert 10
+cargo run --release -- hard 50
+cargo run --release -- expert 50
 ```
 
 ## License

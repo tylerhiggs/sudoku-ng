@@ -2,7 +2,7 @@
   @for (num of numLeft(); let i = $index; track i) {
     <div>
       <button
-        class="button-background m-2 flex flex-col items-center justify-center rounded-md p-2 text-white hover:shadow-sm disabled:bg-gray-300 disabled:text-gray-500"
+        class="button-background m-2 flex cursor-pointer flex-col items-center justify-center rounded-md p-2 text-white hover:shadow-sm disabled:bg-gray-300 disabled:text-gray-500"
         [class]="[noteMode() ? 'note-mode' : '']"
         (click)="onNumberClick(i)"
         [disabled]="!num"

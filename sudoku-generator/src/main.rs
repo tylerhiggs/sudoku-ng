@@ -29,25 +29,27 @@ fn main() {
         1
     };
     let mut entries = Vec::new();
-    for _ in 0..num_puzzles {
-        let solved = create_solved_table();
-        let mut table = solved.clone();
-        print_table(&solved);
-        let success = remove_numbers(&mut table, holes);
-        if !success {
-            println!("Failed to remove numbers!");
-            continue;
-        }
-        println!();
-        print_table(&table);
-        println!();
-        println!("{}", hash_table(&table));
+    while num_puzzles - entries.len() > 0 {
+        for _ in 0..(num_puzzles - entries.len()) {
+            let solved = create_solved_table();
+            let mut table = solved.clone();
+            print_table(&solved);
+            let success = remove_numbers(&mut table, holes);
+            if !success {
+                println!("Failed to remove numbers!");
+                continue;
+            }
+            println!();
+            print_table(&table);
+            println!();
+            println!("{}", hash_table(&table));
 
-        entries.push(SudokuEntry {
-            puzzle: table,
-            solution: solved,
-            hash: hash_table(&table),
-        });
+            entries.push(SudokuEntry {
+                puzzle: table,
+                solution: solved,
+                hash: hash_table(&table),
+            });
+        }
     }
 
     let rt = tokio::runtime::Runtime::new().unwrap();

@@ -1,10 +1,20 @@
-import { Component, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-puzzle-nav',
   imports: [],
   templateUrl: './puzzle-nav.component.html',
+  providers: [],
 })
 export class PuzzleNavComponent {
+  readonly timeElapsed = input.required<number>();
   readonly navToHome = output<void>();
+
+  readonly timeString = computed(() => {
+    const time = this.timeElapsed();
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time / 60) % 60);
+    const seconds = time % 60;
+    return `${hours ? hours + ':' : ''}${minutes}:${seconds.toString().padStart(2, '0')}`;
+  });
 }

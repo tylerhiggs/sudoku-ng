@@ -1,12 +1,13 @@
-import { Component, computed, effect, signal, untracked } from '@angular/core';
+import { Component, computed, effect, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { SudokuTableComponent } from './sudoku-table/sudoku-table.component';
-import { Difficulty, FirebaseService } from './firebase.service';
+import { FirebaseService } from './firebase.service';
 import { VictoryDialogComponent } from './victory-dialog/victory-dialog.component';
-import { IndexedDbCompletedService } from './indexed-db-completed.service';
 import { PuzzleNavComponent } from './puzzle-nav/puzzle-nav.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { Difficulty } from '../types';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-
     VictoryDialogComponent,
     PuzzleNavComponent,
     ConfirmationDialogComponent,
+    JsonPipe,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -32,6 +34,8 @@ export class AppComponent {
       Array.from({ length: 9 }, () => Array(9).fill(false)),
     ),
   );
+  readonly timeElapsed = signal(0);
+  readonly timerInterval = signal<NodeJS.Timeout | null>(null);
   readonly loading = signal<boolean>(false);
   readonly showVictoryDialog = signal<boolean>(true);
   readonly isVictoryDialogOpen = computed(() => {
@@ -43,17 +47,22 @@ export class AppComponent {
     'You will lose all progress on the current puzzle.',
   );
   readonly pendingDifficulty = signal<Difficulty | null>(null);
-  constructor(
-    private firebaseService: FirebaseService,
-    private indexedDbService: IndexedDbCompletedService,
-  ) {
+
+  constructor(private firebaseService: FirebaseService) {
+    try {
+      this.firebaseService.tryPopulateLocalUnsolvedStore();
+    } catch (error) {
+      console.error(error);
+    }
     const localPuzzle = localStorage.getItem('currentPuzzle');
     if (localPuzzle) {
       this.originalPuzzle.set(JSON.parse(localPuzzle));
+      console.log('puzzle', this.originalPuzzle());
     }
     const localSolved = localStorage.getItem('currentSolved');
     if (localSolved) {
       this.solved.set(JSON.parse(localSolved));
+      console.log('solved', this.solved());
     }
     const localTable = localStorage.getItem('currentTable');
     if (localTable) {
@@ -66,6 +75,11 @@ export class AppComponent {
     const localHash = localStorage.getItem('currentHash');
     if (localHash) {
       this.hash.set(JSON.parse(localHash));
+    }
+    const localTime = localStorage.getItem('currentTime');
+    if (localTime) {
+      this.timeElapsed.set(JSON.parse(localTime));
+      this.startTimer();
     }
 
     if (
@@ -102,10 +116,6 @@ export class AppComponent {
         return;
       }
       localStorage.setItem('currentTable', JSON.stringify(this.table()));
-      console.log('table', this.table());
-      untracked(() => {
-        console.log('within untracked', this.originalPuzzle());
-      });
     });
 
     effect(() => {
@@ -126,16 +136,23 @@ export class AppComponent {
     });
 
     effect(() => {
-      console.log('am I even here?', this.hash(), this.isSolved());
       const hash = this.hash();
-      if (this.isSolved() && hash) {
+      const time = this.timeElapsed();
+      const difficulty = this.pendingDifficulty();
+      if (this.isSolved() && hash && time && difficulty) {
+        this.stopTimer();
         try {
-          console.log('adding row', hash);
-          this.indexedDbService.addRow(hash);
+          this.firebaseService.completePuzzle(hash, time, difficulty);
         } catch (error) {
           console.error(error);
         }
       }
+    });
+
+    effect(() => {
+      const time = this.timeElapsed();
+      if (!time) return;
+      localStorage.setItem('currentTime', JSON.stringify(time));
     });
   }
 
@@ -165,9 +182,25 @@ export class AppComponent {
       this.table.set([...puzzle.puzzle.map((r) => [...r])]);
       this.hash.set(parseInt(puzzle.hash));
       this.mainMenuOpen.set(false);
+      this.startTimer();
     }
     this.loading.set(false);
   };
+
+  private startTimer() {
+    this.timerInterval.set(
+      setInterval(() => {
+        this.timeElapsed.update((time) => time + 1);
+      }, 1000),
+    );
+  }
+
+  private stopTimer() {
+    const timerInterval = this.timerInterval();
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+  }
 
   readonly updateTable = ({
     r,
@@ -227,12 +260,16 @@ export class AppComponent {
     this.hash.set(null);
     this.solved.set(null);
     this.originalPuzzle.set(null);
+    this.stopTimer();
+    this.timeElapsed.set(0);
+    this.timerInterval.set(null);
 
     localStorage.removeItem('currentPuzzle');
     localStorage.removeItem('currentSolved');
     localStorage.removeItem('currentTable');
     localStorage.removeItem('currentNoteTable');
     localStorage.removeItem('currentHash');
+    localStorage.removeItem('currentTime');
   };
 
   readonly confirmReset = () => {

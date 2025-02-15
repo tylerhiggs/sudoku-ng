@@ -4,27 +4,25 @@
   background-color: theme("colors.indigo.400");
 }
 
-.button-background:hover {
+.button-background:hover:not(:disabled) {
   background-color: theme("colors.indigo.500");
 }
-.button-background:active {
+.button-background:active:not(:disabled) {
   background-color: theme("colors.indigo.600");
 }
-.button-background:focus {
+.button-background:focus:not(:disabled) {
   background-color: theme("colors.indigo.500");
 }
 
-.button-background.note-mode {
+.button-background.note-mode:not(:disabled) {
   background-color: theme("colors.emerald.400");
 }
-.button-background.note-mode:hover {
+.button-background.note-mode:hover:not(:disabled) {
   background-color: theme("colors.emerald.500");
 }
-
-.button-background.note-mode:active {
+.button-background.note-mode:active:not(:disabled) {
   background-color: theme("colors.emerald.600");
 }
-
-.button-background.note-mode:focus {
+.button-background.note-mode:focus:not(:disabled) {
   background-color: theme("colors.emerald.500");
 }
