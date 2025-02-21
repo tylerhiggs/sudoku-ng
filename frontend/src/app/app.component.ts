@@ -82,13 +82,12 @@ export class AppComponent {
       this.startTimer();
     }
 
-    if (
-      localHash ||
-      localNoteTable ||
-      localTable ||
-      localSolved ||
-      localPuzzle
-    ) {
+    const localDifficulty = localStorage.getItem('currentDifficulty');
+    if (localDifficulty) {
+      this.pendingDifficulty.set(JSON.parse(localDifficulty));
+    }
+
+    if (localHash && localTable && localSolved && localPuzzle) {
       this.mainMenuOpen.set(false);
     }
 
@@ -129,6 +128,16 @@ export class AppComponent {
     });
 
     effect(() => {
+      if (!this.pendingDifficulty()) {
+        return;
+      }
+      localStorage.setItem(
+        'currentDifficulty',
+        JSON.stringify(this.pendingDifficulty()),
+      );
+    });
+
+    effect(() => {
       if (!this.hash()) {
         return;
       }
@@ -139,11 +148,15 @@ export class AppComponent {
       const hash = this.hash();
       const time = this.timeElapsed();
       const difficulty = this.pendingDifficulty();
+      console.log('isSolved', this.isSolved(), hash, time, difficulty);
       if (this.isSolved() && hash && time && difficulty) {
+        console.log('made it in the effect');
         this.stopTimer();
         try {
+          console.log('696969');
           this.firebaseService.completePuzzle(hash, time, difficulty);
         } catch (error) {
+          console.error('caught error in app.component.ts');
           console.error(error);
         }
       }
@@ -157,6 +170,10 @@ export class AppComponent {
   }
 
   readonly openPuzzle = async (difficulty: Difficulty, force = false) => {
+    this.pendingDifficulty.set(difficulty);
+    this.stopTimer();
+    this.timeElapsed.set(0);
+    this.timerInterval.set(null);
     if (!force) {
       const localTable: number[][] = JSON.parse(
         localStorage.getItem('currentTable') || 'null',
@@ -170,7 +187,6 @@ export class AppComponent {
         !localTable.every((r, i) => r.every((c, j) => c === localPuzzle[i][j]))
       ) {
         this.confirmationDialogOpen.set(true);
-        this.pendingDifficulty.set(difficulty);
         return;
       }
     }
@@ -238,14 +254,14 @@ export class AppComponent {
     });
   };
 
-  readonly isSolved = () => {
+  readonly isSolved = computed(() => {
     const table = this.table();
     const solved = this.solved();
     if (!table || !solved) {
       return false;
     }
     return table.every((r, i) => r.every((c, j) => c === solved[i][j]));
-  };
+  });
 
   readonly reset = (removeFromLocal = true) => {
     this.mainMenuOpen.set(true);

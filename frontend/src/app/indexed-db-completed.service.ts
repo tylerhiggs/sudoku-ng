@@ -102,6 +102,7 @@ export class IndexedDbCompletedService {
   }
 
   async removeUnsolved(hash: number, difficulty: Difficulty): Promise<void> {
+    console.log('removing', hash, difficulty);
     const storeName = `${this.unsolvedStorePrefix}-${difficulty}`;
     const db = await this.openDb();
 
@@ -111,11 +112,12 @@ export class IndexedDbCompletedService {
       const request = store.delete(hash);
 
       request.onsuccess = () => {
-        console.log('success');
+        console.log('successfully deleted', hash);
         resolve();
       };
 
       request.onerror = (event: Event) => {
+        console.error('error deleting from local unsolved', hash);
         console.error((event.target as IDBRequest).error);
         reject((event.target as IDBRequest).error);
       };
@@ -165,12 +167,12 @@ export class IndexedDbCompletedService {
       const request = store.openCursor();
       request.onsuccess = (event: Event) => {
         const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          console.log('found unsolved puzzle', cursor.value);
-          resolve(cursor.value);
+        if (!cursor) {
+          console.error('No unsolved puzzles', 'cursor', cursor);
+          reject(new Error('No unsolved puzzles'));
         }
-        console.error('No unsolved puzzles');
-        reject(new Error('No unsolved puzzles'));
+        console.log('found unsolved puzzle', cursor.value);
+        resolve(cursor.value);
       };
 
       request.onerror = (event: any) => {

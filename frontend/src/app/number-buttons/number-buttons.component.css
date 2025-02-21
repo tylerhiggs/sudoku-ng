@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-.button-background {
+.button-background:not(:disabled) {
   background-color: theme("colors.indigo.400");
 }
 

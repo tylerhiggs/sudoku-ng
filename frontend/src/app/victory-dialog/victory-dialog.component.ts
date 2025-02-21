@@ -1,4 +1,5 @@
 import { Component, effect, input, output, viewChild } from '@angular/core';
+import { FirebaseService } from '../firebase.service';
 
 @Component({
   selector: 'app-victory-dialog',
