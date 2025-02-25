@@ -15,6 +15,6 @@ export class PuzzleNavComponent {
     const hours = Math.floor(time / 3600);
     const minutes = Math.floor((time / 60) % 60);
     const seconds = time % 60;
-    return `${hours ? hours + ':' : ''}${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours ? hours + ':' : ''}${hours ? minutes.toString().padStart(2, '0') : minutes}:${seconds.toString().padStart(2, '0')}`;
   });
 }

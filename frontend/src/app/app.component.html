@@ -6,7 +6,7 @@
 }
 <main class="h-screen w-full">
   @if (solved() && originalPuzzle() && !loading() && !mainMenuOpen()) {
-    <div [attr.inert]="isVictoryDialogOpen() ? true : ''">
+    <div [attr.inert]="isVictoryDialogOpen() ? '' : null">
       <app-sudoku-table
         [originalTable]="originalPuzzle()!"
         [solvedTable]="solved()!"
