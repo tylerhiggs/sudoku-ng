@@ -295,4 +295,10 @@ export class AppComponent {
     this.openPuzzle(difficulty, true);
     this.confirmationDialogOpen.set(false);
   };
+
+  readonly quickPencil = () => {
+    this.noteTable.update((t) =>
+      t.map((r) => r.map((notes) => notes.map(() => true))),
+    );
+  };
 }

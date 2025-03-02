@@ -29,6 +29,7 @@ export class SudokuTableComponent {
     c: number;
     value: number;
   }>();
+  readonly quickPencil = output<void>();
 
   readonly noteMode = signal(false);
 
@@ -170,6 +171,10 @@ export class SudokuTableComponent {
     const table = this.table();
     const noteTable = this.noteTable();
     if (!table || !noteTable) return false;
+    const notNumInBox = !this.numInBox(row, col, num);
+    if (row === 7 && col === 6 && num === 8) {
+      console.log('not num in box', notNumInBox);
+    }
     return (
       noteTable[row][col][num - 1] &&
       table[row].every((entry) => entry !== num) &&
@@ -179,19 +184,20 @@ export class SudokuTableComponent {
   };
 
   readonly numInBox = (row: number, col: number, num: number) => {
-    const startRow = Math.floor(row / 3) * 3;
-    const startCol = Math.floor(col / 3) * 3;
+    const startRow = Math.floor(row / 3) * 3; // 6
+    const startCol = Math.floor(col / 3) * 3; // 6
     const table = this.table();
-    if (!table) return false;
-    return table.every((r, i) => {
-      return !r.every(
-        (entry, j) =>
-          entry !== num ||
-          (i >= startRow &&
+    if (!table) return true;
+    return table.some((r, i) => {
+      return r
+        .filter(
+          (_, j) =>
+            i >= startRow &&
             i < startRow + 3 &&
             j >= startCol &&
-            j < startCol + 3),
-      );
+            j < startCol + 3,
+        )
+        .some((entry) => entry === num);
     });
   };
 

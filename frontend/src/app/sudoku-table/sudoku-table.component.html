@@ -110,6 +110,7 @@
       (noteModeChange)="toggleNoteMode()"
       (undo)="onUndo()"
       (erase)="erase()"
+      (quickPencil)="quickPencil.emit()"
     ></app-sudoku-controls>
 
     <app-number-buttons
