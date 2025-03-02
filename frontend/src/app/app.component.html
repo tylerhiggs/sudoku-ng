@@ -4,7 +4,7 @@
     (navToHome)="reset(false)"
   ></app-puzzle-nav>
 }
-<main class="h-screen w-full">
+<main class="h-screen w-full p-4 dark:bg-gray-800 dark:text-white">
   @if (solved() && originalPuzzle() && !loading() && !mainMenuOpen()) {
     <div [attr.inert]="isVictoryDialogOpen() ? '' : null">
       <app-sudoku-table

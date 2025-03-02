@@ -7,7 +7,7 @@
     @for (row of table(); let r = $index; track r) {
       @for (cell of row; let c = $index; track c) {
         <div
-          class="cell-hover relative flex aspect-square w-full items-center justify-center border border-slate-300 p-0 hover:bg-blue-200 sm:text-lg md:text-2xl xl:text-3xl"
+          class="cell-hover relative flex aspect-square w-full items-center justify-center border border-slate-300 p-0 hover:bg-blue-200 sm:text-lg md:text-2xl xl:text-3xl dark:border-slate-800 dark:bg-gray-700 dark:hover:bg-violet-300 dark:hover:text-slate-600"
           [class]="[
             lightBlueHighlighted(r, c)
               ? 'cell-same-number'
@@ -17,13 +17,22 @@
             noteMode() ? 'note-mode' : '',
             highlightedCell().r === r && highlightedCell().c === c
               ? noteMode()
-                ? 'bg-emerald-200'
+                ? 'not-hover:bg-emerald-200'
                 : 'not-hover:bg-blue-200'
-              : 'not-hover:bg-white',
+              : 'not-hover:not-dark:bg-white',
+            highlightedCell().r === r && highlightedCell().c === c
+              ? noteMode()
+                ? 'dark:not-hover:bg-emerald-400'
+                : 'dark:not-hover:bg-violet-400'
+              : 'not-hover:not-dark:bg-white',
             r % 3 === 0 ? 'border-t-slate-500' : '',
+            r % 3 === 0 ? 'dark:border-t-slate-100' : '',
             r === 8 ? 'border-b-slate-500' : '',
+            r === 8 ? 'dark:border-b-slate-100' : '',
             c % 3 === 0 ? 'border-l-slate-500' : '',
+            c % 3 === 0 ? 'dark:border-l-slate-100' : '',
             c === 8 ? 'border-r-slate-500' : '',
+            c === 8 ? 'dark:border-r-slate-100' : '',
             errorCell(r, c) ? 'text-red-500' : '',
           ]"
           (click)="onFocus(r, c)"
@@ -40,7 +49,7 @@
             solvedTable()![r] &&
             cell === solvedTable()![r][c]
           ) {
-            <div class="text-blue-500">{{ cell }}</div>
+            <div class="text-blue-500 dark:text-blue-300">{{ cell }}</div>
           } @else if (cell !== 0) {
             <div class="text-red-500">{{ cell }}</div>
           } @else {
@@ -51,8 +60,35 @@
                 <div
                   class="relative flex items-center justify-center text-xs"
                   [class]="[
-                    noted && noteHighlighted(i + 1) && displayNote(r, c, i + 1)
+                    !noteMode() &&
+                    noted &&
+                    noteHighlighted(i + 1) &&
+                    displayNote(r, c, i + 1)
                       ? 'bg-blue-100'
+                      : 'bg-transparent',
+                    !noteMode() &&
+                    noted &&
+                    noteHighlighted(i + 1) &&
+                    displayNote(r, c, i + 1)
+                      ? 'dark:bg-violet-400'
+                      : 'bg-transparent',
+                    noteMode() &&
+                    noted &&
+                    noteHighlighted(i + 1) &&
+                    displayNote(r, c, i + 1)
+                      ? 'bg-emerald-100'
+                      : 'bg-transparent',
+                    noteMode() &&
+                    noted &&
+                    noteHighlighted(i + 1) &&
+                    displayNote(r, c, i + 1)
+                      ? 'dark:bg-emerald-400'
+                      : 'bg-transparent',
+                    noteMode() &&
+                    noted &&
+                    noteHighlighted(i + 1) &&
+                    displayNote(r, c, i + 1)
+                      ? 'dark:text-slate-100'
                       : 'bg-transparent',
                   ]"
                 >
