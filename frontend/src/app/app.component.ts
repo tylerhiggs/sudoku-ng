@@ -8,6 +8,7 @@ import { PuzzleNavComponent } from './puzzle-nav/puzzle-nav.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 import { Difficulty } from '../types';
 import { JsonPipe } from '@angular/common';
+import { SnackbarComponent } from './snackbar/snackbar.component';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ import { JsonPipe } from '@angular/common';
     PuzzleNavComponent,
     ConfirmationDialogComponent,
     JsonPipe,
+    SnackbarComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -148,12 +150,9 @@ export class AppComponent {
       const hash = this.hash();
       const time = this.timeElapsed();
       const difficulty = this.pendingDifficulty();
-      console.log('isSolved', this.isSolved(), hash, time, difficulty);
       if (this.isSolved() && hash && time && difficulty) {
-        console.log('made it in the effect');
         this.stopTimer();
         try {
-          console.log('696969');
           this.firebaseService.completePuzzle(hash, time, difficulty);
         } catch (error) {
           console.error('caught error in app.component.ts');

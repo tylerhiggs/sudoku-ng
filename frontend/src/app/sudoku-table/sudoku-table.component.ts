@@ -6,9 +6,11 @@ import {
   HostListener,
   input,
   output,
+  inject,
 } from '@angular/core';
 import { NumberButtonsComponent } from '../number-buttons/number-buttons.component';
 import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.component';
+import { SnackbarStore } from '../snackbar.store';
 
 @Component({
   selector: 'app-sudoku-table',
@@ -18,6 +20,7 @@ import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SudokuTableComponent {
+  readonly snackbarStore = inject(SnackbarStore);
   readonly originalTable = input<number[][]>();
   readonly solvedTable = input<number[][]>();
   readonly table = input<number[][]>();
@@ -120,11 +123,13 @@ export class SudokuTableComponent {
     const { r: row, c: col } = this.highlightedCell();
     if (row === -1 || col === -1) {
       console.error('No cell is selected');
+      this.snackbarStore.enqueue('No cell is selected', 'warning');
       return;
     }
     const value = Number(strValue);
     if (isNaN(value)) {
       console.error('Input is not a number');
+      this.snackbarStore.enqueue('Input is not a number', 'warning');
       return;
     }
     if (value < 1 || value > 9) {
@@ -139,11 +144,11 @@ export class SudokuTableComponent {
     const table = this.table();
 
     if (!table || !table[row].every((entry) => entry !== value)) {
-      console.log('Value is in row');
+      this.snackbarStore.enqueue('Value is in row', 'warning');
       return;
     }
     if (!table || !table.every((r) => r[col] !== value)) {
-      console.log('Value is in column');
+      this.snackbarStore.enqueue('Value is in column', 'warning');
       return;
     }
     if (this.noteMode()) {

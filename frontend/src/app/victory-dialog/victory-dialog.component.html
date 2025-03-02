@@ -2,7 +2,7 @@
   <div class="fixed inset-0 flex items-center justify-center backdrop-blur-lg">
     <dialog
       id="victory-dialog"
-      class="relative w-96 rounded-lg bg-white p-6 text-center opacity-100 shadow-lg"
+      class="relative w-96 rounded-lg bg-white p-6 text-center opacity-100 shadow-lg dark:bg-neutral-600 dark:text-neutral-100"
       [open]="open()"
       (close)="onClose.emit()"
       tabindex="-1"
@@ -15,7 +15,7 @@
         <button
           tabindex="0"
           (click)="onClose.emit()"
-          class="cursor-pointer rounded-sm border border-blue-500 bg-white px-4 py-2 text-blue-500 hover:bg-blue-200 focus:bg-blue-200"
+          class="bg-clear cursor-pointer rounded-sm border border-blue-500 px-4 py-2 text-blue-500 hover:bg-blue-200 focus:bg-blue-200 dark:hover:bg-blue-950"
         >
           Close
         </button>
