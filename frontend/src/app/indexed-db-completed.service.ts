@@ -5,7 +5,6 @@ import { Difficulty, SudokuEntryIndexedDb } from '../types';
   providedIn: 'root',
 })
 export class IndexedDbCompletedService {
-  constructor() {}
   private readonly dbName = 'SudokuDB';
   private readonly solvedStoreName = 'completed';
   private readonly unsolvedStorePrefix = 'unsolved';
@@ -142,12 +141,12 @@ export class IndexedDbCompletedService {
       const store = transaction.objectStore(storeName);
       const request = store.count();
 
-      request.onsuccess = (event: any) => {
-        resolve(event.target.result);
+      request.onsuccess = (event) => {
+        resolve((event.target as IDBRequest).result);
       };
 
-      request.onerror = (event: any) => {
-        console.error(event.target.error);
+      request.onerror = (event) => {
+        console.error((event.target as IDBRequest).error);
         resolve(0);
       };
     });
@@ -175,9 +174,10 @@ export class IndexedDbCompletedService {
         resolve(cursor.value);
       };
 
-      request.onerror = (event: any) => {
-        console.error(event.target.error);
-        reject(event.target.error);
+      request.onerror = (event) => {
+        const err = (event.target as IDBRequest).error;
+        console.error(err);
+        reject(err);
       };
     });
   }

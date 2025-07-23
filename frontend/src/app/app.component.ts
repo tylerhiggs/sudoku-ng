@@ -1,4 +1,4 @@
-import { Component, computed, effect, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { SudokuTableComponent } from './sudoku-table/sudoku-table.component';
@@ -26,6 +26,8 @@ import { SnackbarComponent } from './snackbar/snackbar.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
+  private firebaseService = inject(FirebaseService);
+
   readonly originalPuzzle = signal<number[][] | null>(null);
   readonly solved = signal<number[][] | null>(null);
   readonly table = signal<number[][] | null>(null);
@@ -50,7 +52,7 @@ export class AppComponent {
   );
   readonly pendingDifficulty = signal<Difficulty | null>(null);
 
-  constructor(private firebaseService: FirebaseService) {
+  constructor() {
     try {
       this.firebaseService.tryPopulateLocalUnsolvedStore();
     } catch (error) {

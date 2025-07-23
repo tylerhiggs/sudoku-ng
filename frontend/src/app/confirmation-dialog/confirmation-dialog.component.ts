@@ -7,8 +7,8 @@ import { Component, input, output } from '@angular/core';
 })
 export class ConfirmationDialogComponent {
   readonly open = input<boolean>();
-  readonly onClose = output<void>();
-  readonly onConfirm = output<void>();
+  readonly closeDialog = output<void>();
+  readonly confirm = output<void>();
   readonly title = input<string>();
   readonly message = input<string>();
 }

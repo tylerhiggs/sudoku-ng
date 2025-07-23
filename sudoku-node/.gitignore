@@ -1,10 +1,11 @@
-sudoku-6fbd2-firebase-adminsdk-fbsvc-608e73c5d4.json
-
+sudoku-6fbd2-firebase-adminsdk-fbsvc-d7ee4079bf.json
 
 # Logs
 logs
 *.log
 npm-debug.log*
+
+.DS_Store
 
 # Dependency directories
 node_modules/

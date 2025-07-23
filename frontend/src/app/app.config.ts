@@ -1,6 +1,6 @@
 import {
   ApplicationConfig,
-  provideExperimentalZonelessChangeDetection,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
@@ -11,7 +11,7 @@ import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideExperimentalZonelessChangeDetection(),
+    provideZonelessChangeDetection(),
     provideFirebaseApp(() =>
       initializeApp({
         projectId: 'sudoku-6fbd2',

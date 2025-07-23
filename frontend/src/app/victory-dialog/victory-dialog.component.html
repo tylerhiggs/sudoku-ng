@@ -4,7 +4,7 @@
       id="victory-dialog"
       class="relative w-96 rounded-lg bg-white p-6 text-center opacity-100 shadow-lg dark:bg-neutral-600 dark:text-neutral-100"
       [open]="open()"
-      (close)="onClose.emit()"
+      (close)="closeDialog.emit()"
       tabindex="-1"
     >
       <h2 class="mb-4 text-2xl font-bold">Congratulations!</h2>
@@ -14,16 +14,15 @@
       <div class="flex justify-end gap-3">
         <button
           tabindex="0"
-          (click)="onClose.emit()"
+          (click)="closeDialog.emit()"
           class="bg-clear cursor-pointer rounded-sm border border-blue-500 px-4 py-2 text-blue-500 hover:bg-blue-200 focus:bg-blue-200 dark:hover:bg-blue-950"
         >
           Close
         </button>
         <button
-          autofocus
           tabindex="0"
           class="cursor-pointer rounded-sm bg-linear-to-tr from-blue-500 to-purple-500 px-4 py-2 text-white hover:from-blue-700 hover:to-purple-700 focus:from-blue-700 focus:to-purple-700"
-          (click)="onRestart.emit()"
+          (click)="restart.emit()"
         >
           Return to Home
         </button>

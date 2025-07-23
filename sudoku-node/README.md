@@ -20,7 +20,7 @@ npm install
 You will need to have a firebase project setup and the credentials for firebase admin SDK in a `.json` file in the root directory of this node project. In the terminal, run something like:
 
 ```sh
-export GOOGLE_APPLICATION_CREDENTIALS="/Users/tylerhiggs/Desktop/Class information/Personal Projects/sudoku-ng/sudoku-node/sudoku-6fbd2-firebase-adminsdk-fbsvc-608e73c5d4.json"
+export GOOGLE_APPLICATION_CREDENTIALS="/Users/tylerhiggs/Desktop/Class information/Personal Projects/sudoku-ng/sudoku-node/sudoku-6fbd2-firebase-adminsdk-fbsvc-d7ee4079bf.json"
 ```
 
 where you replace the path with the path to your credentials file.

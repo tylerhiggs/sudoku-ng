@@ -1,5 +1,4 @@
-import { Component, effect, input, output, viewChild } from '@angular/core';
-import { FirebaseService } from '../firebase.service';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-victory-dialog',
@@ -8,6 +7,6 @@ import { FirebaseService } from '../firebase.service';
 })
 export class VictoryDialogComponent {
   readonly open = input<boolean>();
-  readonly onClose = output<void>();
-  readonly onRestart = output<void>();
+  readonly closeDialog = output<void>();
+  readonly restart = output<void>();
 }

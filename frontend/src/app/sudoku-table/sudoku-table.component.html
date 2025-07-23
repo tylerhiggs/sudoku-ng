@@ -6,7 +6,7 @@
   >
     @for (row of table(); let r = $index; track r) {
       @for (cell of row; let c = $index; track c) {
-        <div
+        <button
           class="cell-hover relative flex aspect-square w-full items-center justify-center border border-slate-300 p-0 hover:bg-blue-200 sm:text-lg md:text-2xl xl:text-3xl dark:border-slate-800 dark:bg-gray-700 dark:hover:bg-violet-300 dark:hover:text-slate-600"
           [class]="[
             lightBlueHighlighted(r, c)
@@ -99,15 +99,14 @@
               }
             </div>
           }
-        </div>
+        </button>
       }
     }
   </div>
 
   <div class="flex flex-col items-center gap-2 sm:flex-row sm:gap-12">
     <app-sudoku-controls
-      [noteMode]="noteMode()"
-      (noteModeChange)="toggleNoteMode()"
+      [(noteMode)]="noteMode"
       (undo)="onUndo()"
       (erase)="erase()"
       (quickPencil)="quickPencil.emit()"

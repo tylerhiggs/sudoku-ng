@@ -47,9 +47,9 @@
     tabindex="0"
     class="mb-4 flex cursor-pointer flex-col items-center rounded-md p-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-600"
     [class]="noteMode() ? 'text-emerald-400' : ''"
-    (click)="noteModeChange.emit()"
+    (click)="noteMode.set(!noteMode())"
     [attr.aria-pressed]="noteMode()"
-    (keydown.space.prevent)="noteModeChange.emit()"
+    (keydown.space.prevent)="noteMode.set(!noteMode())"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  input,
+  model,
   output,
 } from '@angular/core';
 
@@ -11,9 +11,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SudokuControlsComponent {
-  readonly noteMode = input.required<boolean>();
+  readonly noteMode = model.required<boolean>();
 
-  readonly noteModeChange = output<void>();
   readonly undo = output<void>();
   readonly erase = output<void>();
   readonly quickPencil = output<void>();

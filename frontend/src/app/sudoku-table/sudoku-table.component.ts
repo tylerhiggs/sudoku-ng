@@ -37,13 +37,13 @@ export class SudokuTableComponent {
   readonly noteMode = signal(false);
 
   readonly moveHistory = signal<
-    Array<{
+    {
       r: number;
       c: number;
       value: number;
       note?: boolean;
       delete?: boolean;
-    }>
+    }[]
   >([]);
 
   readonly highlightedCell = signal({ r: 0, c: 0 });
@@ -79,6 +79,10 @@ export class SudokuTableComponent {
     }
     if (event.key === 'p') {
       this.noteMode.update((n) => !n);
+      return;
+    }
+    if (this.table()?.every((r) => r.every((c) => c !== 0))) {
+      // puzzle solved
       return;
     }
     this.enterValue(event.key);

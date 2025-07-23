@@ -78,15 +78,15 @@
   }
   <app-victory-dialog
     [open]="isVictoryDialogOpen()"
-    (onRestart)="reset()"
-    (onClose)="showVictoryDialog.set(false)"
+    (restart)="reset()"
+    (closeDialog)="showVictoryDialog.set(false)"
   ></app-victory-dialog>
   <app-confirmation-dialog
     [open]="confirmationDialogOpen()"
     [title]="confirmationTitle()"
     [message]="confirmationMessage()"
-    (onConfirm)="confirmReset()"
-    (onClose)="confirmationDialogOpen.set(false)"
+    (confirm)="confirmReset()"
+    (closeDialog)="confirmationDialogOpen.set(false)"
   ></app-confirmation-dialog>
   <app-snackbar></app-snackbar>
 </main>

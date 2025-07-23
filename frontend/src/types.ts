@@ -1,14 +1,14 @@
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
-export type SudokuEntryFirebase = {
+export interface SudokuEntryFirebase {
   puzzle: number[];
   solution: number[];
   hash: string;
-};
+}
 
-export type SudokuEntryIndexedDb = {
+export interface SudokuEntryIndexedDb {
   puzzle: number[][];
   solution: number[][];
   hash: string;
   difficulty: Difficulty;
-};
+}

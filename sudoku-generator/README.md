@@ -35,6 +35,14 @@ cargo run --release -- hard 50
 cargo run --release -- expert 50
 ```
 
+## Testing
+
+To run the tests, use the following command:
+
+```sh
+cargo test
+```
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

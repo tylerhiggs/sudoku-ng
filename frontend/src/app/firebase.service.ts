@@ -4,9 +4,7 @@ import {
   collectionData,
   Firestore,
   limit,
-  orderBy,
   query,
-  where,
 } from '@angular/fire/firestore';
 import { firstValueFrom, Observable } from 'rxjs';
 import { IndexedDbCompletedService } from './indexed-db-completed.service';
