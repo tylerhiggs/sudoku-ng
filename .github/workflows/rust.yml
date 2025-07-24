@@ -5,12 +5,15 @@ on:
     branches: ["main"]
     paths:
       - "sudoku-generator/**"
-      - ".github/workflows/test-rs-sudoku-generator.yml"
+      - ".github/workflows/rust.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "sudoku-generator/**"
-      - ".github/workflows/test-rs-sudoku-generator.yml"
+      - ".github/workflows/rust.yml"
+defaults:
+  run:
+    working-directory: ./sudoku-generator
 
 env:
   CARGO_TERM_COLOR: always
