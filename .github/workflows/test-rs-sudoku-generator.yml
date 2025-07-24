@@ -1,0 +1,49 @@
+name: Test Rust Sudoku Generator
+
+on:
+  push:
+    paths:
+      - "sudoku-generator/**"
+      - ".github/workflows/test-rs-sudoku-generator.yml"
+  pull_request:
+    paths:
+      - "sudoku-generator/**"
+      - ".github/workflows/test-rs-sudoku-generator.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sudoku-generator
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all stable
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all stable
