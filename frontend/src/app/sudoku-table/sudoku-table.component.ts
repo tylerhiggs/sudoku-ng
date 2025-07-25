@@ -115,14 +115,6 @@ export class SudokuTableComponent {
     return table[r][c];
   });
 
-  readonly isSolved = computed(() => {
-    return this.numLeft().every((num) => num === 0);
-  });
-
-  readonly toggleNoteMode = () => {
-    this.noteMode.update((n) => !n);
-  };
-
   readonly enterValue = (strValue: string) => {
     const { r: row, c: col } = this.highlightedCell();
     if (row === -1 || col === -1) {
@@ -180,10 +172,6 @@ export class SudokuTableComponent {
     const table = this.table();
     const noteTable = this.noteTable();
     if (!table || !noteTable) return false;
-    const notNumInBox = !this.numInBox(row, col, num);
-    if (row === 7 && col === 6 && num === 8) {
-      console.log('not num in box', notNumInBox);
-    }
     return (
       noteTable[row][col][num - 1] &&
       table[row].every((entry) => entry !== num) &&

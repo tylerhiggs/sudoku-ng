@@ -7,6 +7,7 @@
     @for (row of table(); let r = $index; track r) {
       @for (cell of row; let c = $index; track c) {
         <button
+          [attr.data-testid]="'cell-' + r + '-' + c"
           class="cell-hover relative flex aspect-square w-full items-center justify-center border border-slate-300 p-0 hover:bg-blue-200 sm:text-lg md:text-2xl xl:text-3xl dark:border-slate-800 dark:bg-gray-700 dark:hover:bg-violet-300 dark:hover:text-slate-600"
           [class]="[
             lightBlueHighlighted(r, c)
@@ -58,6 +59,7 @@
             >
               @for (noted of noteTable()[r][c]; let i = $index; track i) {
                 <div
+                  [attr.data-testid]="'note-' + r + '-' + c + '-' + (i + 1)"
                   class="relative flex items-center justify-center text-xs"
                   [class]="[
                     !noteMode() &&

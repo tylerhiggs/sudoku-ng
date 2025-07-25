@@ -54,7 +54,6 @@ export class FirebaseService {
   public async getRandomPuzzle(
     difficulty: Difficulty,
   ): Promise<SudokuEntryIndexedDb> {
-    console.log('getting random puzzle');
     return await this.IndexedDbCompletedService.getRandomUnsolved(difficulty);
   }
 
@@ -63,7 +62,6 @@ export class FirebaseService {
     time: number,
     difficulty: Difficulty,
   ) {
-    console.log('completing puzzle in firebase.service.ts');
     await this.IndexedDbCompletedService.puzzleCompleted(
       hash,
       time,

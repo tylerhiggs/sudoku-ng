@@ -6,7 +6,7 @@ import { FirebaseService } from './firebase.service';
 import { VictoryDialogComponent } from './victory-dialog/victory-dialog.component';
 import { PuzzleNavComponent } from './puzzle-nav/puzzle-nav.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-import { Difficulty } from '../types';
+import type { Difficulty } from '../types';
 import { JsonPipe } from '@angular/common';
 import { SnackbarComponent } from './snackbar/snackbar.component';
 
@@ -61,12 +61,10 @@ export class AppComponent {
     const localPuzzle = localStorage.getItem('currentPuzzle');
     if (localPuzzle) {
       this.originalPuzzle.set(JSON.parse(localPuzzle));
-      console.log('puzzle', this.originalPuzzle());
     }
     const localSolved = localStorage.getItem('currentSolved');
     if (localSolved) {
       this.solved.set(JSON.parse(localSolved));
-      console.log('solved', this.solved());
     }
     const localTable = localStorage.getItem('currentTable');
     if (localTable) {
@@ -103,7 +101,6 @@ export class AppComponent {
         'currentPuzzle',
         JSON.stringify(this.originalPuzzle()),
       );
-      console.log('puzzle', this.originalPuzzle());
     });
 
     effect(() => {
@@ -111,7 +108,6 @@ export class AppComponent {
         return;
       }
       localStorage.setItem('currentSolved', JSON.stringify(this.solved()));
-      console.log('solved', this.solved());
     });
 
     effect(() => {

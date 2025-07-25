@@ -30,7 +30,6 @@ export class IndexedDbCompletedService {
           .filter((storeName) => !db.objectStoreNames.contains(storeName))
           .forEach((storeName) => {
             db.createObjectStore(storeName, { keyPath: 'hash' });
-            console.log(`created db store: ${storeName}`);
           });
       };
 
@@ -58,7 +57,6 @@ export class IndexedDbCompletedService {
       });
 
       request.onsuccess = () => {
-        console.log('success');
         resolve();
       };
 
@@ -101,7 +99,6 @@ export class IndexedDbCompletedService {
   }
 
   async removeUnsolved(hash: number, difficulty: Difficulty): Promise<void> {
-    console.log('removing', hash, difficulty);
     const storeName = `${this.unsolvedStorePrefix}-${difficulty}`;
     const db = await this.openDb();
 
@@ -111,7 +108,6 @@ export class IndexedDbCompletedService {
       const request = store.delete(hash);
 
       request.onsuccess = () => {
-        console.log('successfully deleted', hash);
         resolve();
       };
 
@@ -155,7 +151,6 @@ export class IndexedDbCompletedService {
   async getRandomUnsolved(
     difficulty: Difficulty,
   ): Promise<SudokuEntryIndexedDb> {
-    console.log('here');
     const storeName = `${this.unsolvedStorePrefix}-${difficulty}`;
 
     const db = await this.openDb();
@@ -170,7 +165,6 @@ export class IndexedDbCompletedService {
           console.error('No unsolved puzzles', 'cursor', cursor);
           reject(new Error('No unsolved puzzles'));
         }
-        console.log('found unsolved puzzle', cursor.value);
         resolve(cursor.value);
       };
 

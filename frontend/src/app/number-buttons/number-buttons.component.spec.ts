@@ -17,10 +17,13 @@ describe('NumberButtonsComponent', () => {
         numberClick,
       },
     });
-    const oneButton = screen.getByText('1');
+    const oneButton = screen.getByRole('button', { name: /1/ });
     expect(oneButton).toBeVisible();
     const zeroLeftText = screen.getByText('0');
     expect(zeroLeftText).toBeVisible();
+    expect(oneButton).toBeDisabled();
+    await user.click(oneButton);
+    expect(numberClick).not.toHaveBeenCalled();
     await user.click(screen.getByText('9'));
     expect(numberClick).toHaveBeenCalledWith(9);
   });
