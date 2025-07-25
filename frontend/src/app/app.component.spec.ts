@@ -92,7 +92,26 @@ describe('AppComponent', () => {
     await render(AppComponent, {
       providers: [
         { provide: SnackbarStore, useValue: new SnackbarStore() },
-        { provide: FirebaseService, useValue: mockedFirebaseService },
+        {
+          provide: FirebaseService,
+          useValue: {
+            tryPopulateLocalUnsolvedStore: vi.fn().mockResolvedValue(undefined),
+            getRandomPuzzle: vi.fn().mockResolvedValue({
+              puzzle: [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+              ],
+              solution: [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+              ],
+              hash: '123456789',
+            }),
+            completePuzzle: vi.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     });
     const cell = screen.getByTestId('cell-0-0');

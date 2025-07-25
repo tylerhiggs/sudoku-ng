@@ -45,10 +45,6 @@ npm test
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
 ## Contact
 
 For any inquiries, please contact [thiggs911@gmail.com](mailto:thiggs911@gmail.com).
