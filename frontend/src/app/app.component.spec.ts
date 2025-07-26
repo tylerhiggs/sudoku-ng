@@ -65,6 +65,26 @@ const localStorageMock = (() => {
 
 Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
+vi.mock('./firebase.service', () => ({
+  FirebaseService: vi.fn().mockImplementation(() => ({
+    tryPopulateLocalUnsolvedStore: vi.fn().mockResolvedValue(undefined),
+    getRandomPuzzle: vi.fn().mockResolvedValue({
+      puzzle: [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ],
+      solution: [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ],
+      hash: '123456789',
+    }),
+    completePuzzle: vi.fn().mockResolvedValue(undefined),
+  })),
+}));
+
 describe('AppComponent', () => {
   it('should render sudoku table and emit events', async () => {
     const user = userEvent.setup();
