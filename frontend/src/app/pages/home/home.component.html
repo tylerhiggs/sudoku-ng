@@ -1,52 +1,56 @@
-<h1 class="mb-4 text-center text-4xl font-bold">Sudoku</h1>
-<div class="flex h-full flex-col items-center justify-center gap-4">
-  @if (currentPuzzleExists()) {
-    <a
+<main
+  class="flex h-screen w-full flex-col bg-gray-100 p-4 dark:bg-gray-800 dark:text-gray-100"
+>
+  <h1 class="mb-4 text-center text-4xl font-bold">Sudoku</h1>
+  <div class="flex h-full flex-col items-center justify-center gap-4">
+    @if (currentPuzzleExists()) {
+      <a
+        tabindex="0"
+        routerLink="/current-puzzle"
+        class="cursor-pointer rounded-sm bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 px-4 py-2 font-bold text-white hover:from-purple-500 hover:via-pink-600 hover:to-red-600 focus:from-purple-600 focus:via-pink-700 focus:to-red-700"
+      >
+        Continue Puzzle
+      </a>
+    }
+    <button
       tabindex="0"
-      routerLink="/current-puzzle"
-      class="cursor-pointer rounded-sm bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 px-4 py-2 font-bold text-white hover:from-purple-500 hover:via-pink-600 hover:to-red-600 focus:from-purple-600 focus:via-pink-700 focus:to-red-700"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-sm bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:bg-blue-700 disabled:bg-gray-200 disabled:text-stone-700"
+      (click)="openPuzzle('easy')"
     >
-      Continue Puzzle
-    </a>
-  }
-  <button
-    tabindex="0"
-    [disabled]="loading()"
-    class="cursor-pointer rounded-sm bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:bg-blue-700 disabled:bg-gray-200 disabled:text-stone-700"
-    (click)="openPuzzle('easy')"
-  >
-    Solve Easy Puzzle
-  </button>
-  <button
-    tabindex="0"
-    [disabled]="loading()"
-    class="cursor-pointer rounded-sm bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700 focus:bg-green-700 disabled:bg-gray-200 disabled:text-stone-700"
-    (click)="openPuzzle('medium')"
-  >
-    Solve Medium Puzzle
-  </button>
-  <button
-    tabindex="0"
-    [disabled]="loading()"
-    class="cursor-pointer rounded-sm bg-yellow-500 px-4 py-2 font-bold text-white hover:bg-yellow-700 focus:bg-yellow-700 disabled:bg-gray-200 disabled:text-stone-700"
-    (click)="openPuzzle('hard')"
-  >
-    Solve Hard Puzzle
-  </button>
-  <button
-    tabindex="0"
-    [disabled]="loading()"
-    class="cursor-pointer rounded-sm bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:bg-red-700 disabled:bg-gray-200 disabled:text-stone-700"
-    (click)="openPuzzle('expert')"
-  >
-    Solve Expert Puzzle
-  </button>
-</div>
+      Solve Easy Puzzle
+    </button>
+    <button
+      tabindex="0"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-sm bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700 focus:bg-green-700 disabled:bg-gray-200 disabled:text-stone-700"
+      (click)="openPuzzle('medium')"
+    >
+      Solve Medium Puzzle
+    </button>
+    <button
+      tabindex="0"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-sm bg-yellow-500 px-4 py-2 font-bold text-white hover:bg-yellow-700 focus:bg-yellow-700 disabled:bg-gray-200 disabled:text-stone-700"
+      (click)="openPuzzle('hard')"
+    >
+      Solve Hard Puzzle
+    </button>
+    <button
+      tabindex="0"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-sm bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700 focus:bg-red-700 disabled:bg-gray-200 disabled:text-stone-700"
+      (click)="openPuzzle('expert')"
+    >
+      Solve Expert Puzzle
+    </button>
+  </div>
 
-<app-confirmation-dialog
-  [open]="confirmationDialogOpen()"
-  title="Are you sure?"
-  message="Starting a new puzzle will erase your current progress."
-  (confirm)="confirmReset()"
-  (closeDialog)="confirmationDialogOpen.set(false)"
-></app-confirmation-dialog>
+  <app-confirmation-dialog
+    [open]="confirmationDialogOpen()"
+    title="Are you sure?"
+    message="Starting a new puzzle will erase your current progress."
+    (confirm)="confirmReset()"
+    (closeDialog)="confirmationDialogOpen.set(false)"
+  ></app-confirmation-dialog>
+</main>
