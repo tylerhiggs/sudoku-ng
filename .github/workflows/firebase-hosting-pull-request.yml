@@ -16,16 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci --force && npm run build --force
-      - name: Cache node modules
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install && bun run build
+      - name: Cache bun dependencies
         uses: actions/cache@v4
         with:
           path: frontend/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lockb') }}
       - name: Lint code
-        run: npm run lint
+        run: bun run lint
       - name: Run Angular Tests
-        run: npm run test
+        run: bun run test
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

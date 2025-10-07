@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import {
   Database,
   ref,
@@ -9,7 +9,7 @@ import {
   serverTimestamp,
 } from '@angular/fire/database';
 import { Observable } from 'rxjs';
-import { PuzzleEvent } from '@/../types';
+import type { Difficulty, PuzzleEvent } from 'types';
 
 export interface BaseEvent {
   type: 'cellUpdate' | 'playerJoin' | 'playerLeave';
@@ -49,27 +49,53 @@ export interface GameState {
   providedIn: 'root',
 })
 export class CollaborationService {
-  private database = inject(Database);
+  private readonly database = inject(Database);
 
+  readonly playerId = signal<string | null>(null);
+  readonly playerName = signal<string | null>(null);
+  readonly gameId = signal<string | null>(null);
+
+  /**
+   *
+   * @param originalPuzzle
+   * @param solution
+   * @param currentTable
+   * @param noteTable
+   * @param difficulty
+   * @param playerName
+   * @returns gameId
+   */
   async createGame(
-    puzzle: number[][],
+    originalPuzzle: number[][],
     solution: number[][],
+    currentTable: number[][],
+    noteTable: boolean[][][],
     difficulty: string,
+    hash: number,
     playerName: string,
-  ): Promise<string> {
+    playerId?: string,
+    initialTimeElapsed?: number,
+  ): Promise<{ gameId: string; playerId: string }> {
     const gamesRef = ref(this.database, 'games');
     const newGameRef = push(gamesRef);
     const gameId = newGameRef.key!;
-    const playerId = this.generatePlayerId();
+    const pId = playerId || this.generatePlayerId();
+
+    this.playerId.set(pId);
+    this.playerName.set(playerName);
+    this.gameId.set(gameId);
 
     const gameData = {
       metadata: {
         createdAt: serverTimestamp(),
+        initialTimeElapsed: initialTimeElapsed || 0,
         createdBy: playerId,
         difficulty,
-        originalPuzzle: puzzle,
+        originalPuzzle,
+        currentTable,
+        noteTable,
         solution,
-        hash: this.generatePuzzleHash(puzzle),
+        hash,
         isActive: true,
         lastActivity: serverTimestamp(),
       },
@@ -77,7 +103,7 @@ export class CollaborationService {
         completedAt: null,
       },
       players: {
-        [playerId]: {
+        [pId]: {
           name: playerName,
           joinedAt: serverTimestamp(),
           isActive: true,
@@ -91,12 +117,15 @@ export class CollaborationService {
     // Add to user's games list
     await set(ref(this.database, `userGames/${playerId}/${gameId}`), true);
 
-    return gameId;
+    return { gameId, playerId: pId };
   }
 
   // Join an existing game
-  async joinGame(gameId: string, playerName: string): Promise<boolean> {
-    const playerId = this.generatePlayerId();
+  async joinGame(gameId: string, playerName: string, playerId?: string) {
+    const pId = playerId || this.generatePlayerId();
+    this.playerId.set(pId);
+    this.playerName.set(playerName);
+    this.gameId.set(gameId);
 
     try {
       // Check if game exists and is active
@@ -116,7 +145,7 @@ export class CollaborationService {
       // Add join event
       await this.addGameEvent(gameId, {
         type: 'playerJoin',
-        playerId,
+        playerId: pId,
         playerName,
         timestamp: Date.now(),
       });
@@ -124,15 +153,27 @@ export class CollaborationService {
       // Add to user's games list
       await set(ref(this.database, `userGames/${playerId}/${gameId}`), true);
 
-      return true;
+      return gameSnapshot;
     } catch (error) {
       console.error('Failed to join game:', error);
       return false;
     }
   }
 
-  private async getGameSnapshot(gameId: string) {
-    const gameRef = ref(this.database, `games/${gameId}`);
+  private async getGameSnapshot(gameId: string): Promise<{
+    difficulty: Difficulty;
+    hash: number;
+    isActive: boolean;
+    originalPuzzle: number[][];
+    currentTable: number[][];
+    noteTable: boolean[][][];
+    solution: number[][];
+    createdAt: number;
+    initialTimeElapsed: number;
+    createdBy: string;
+    lastActivity: number;
+  }> {
+    const gameRef = ref(this.database, `games/${gameId}/metadata`);
     return new Promise((resolve) => {
       onValue(
         gameRef,
@@ -145,20 +186,19 @@ export class CollaborationService {
   }
 
   // Update game state
-  async updateCell(
-    gameId: string,
-    row: number,
-    col: number,
-    value: number,
-    playerId: string,
-    playerName: string,
-  ): Promise<void> {
+  async logPuzzleEvent(event: PuzzleEvent): Promise<void> {
+    const gameId = this.gameId();
+    const playerId = this.playerId();
+    const playerName = this.playerName();
+    if (!gameId || !playerId || !playerName) {
+      throw new Error('Not connected to a game');
+    }
     const cellRef = ref(
       this.database,
-      `games/${gameId}/state/currentTable/${row}/${col}`,
+      `games/${gameId}/state/currentTable/${event.r}/${event.c}`,
     );
 
-    await set(cellRef, value);
+    await set(cellRef, event.value);
     await this.updateLastActivity(gameId);
 
     await this.addGameEvent(gameId, {
@@ -166,52 +206,18 @@ export class CollaborationService {
       playerId,
       playerName,
       timestamp: Date.now(),
-      r: row,
-      c: col,
-      value,
-      note: false,
-      delete: value === 0,
-    });
-  }
-
-  // Toggle note
-  async toggleNote(
-    gameId: string,
-    row: number,
-    col: number,
-    noteValue: number,
-    playerId: string,
-    playerName: string,
-    del: boolean,
-  ): Promise<void> {
-    const noteRef = ref(
-      this.database,
-      `games/${gameId}/state/noteTable/${row}/${col}/${noteValue - 1}`,
-    );
-
-    await set(noteRef, true);
-    await this.updateLastActivity(gameId);
-
-    await this.addGameEvent(gameId, {
-      type: 'cellUpdate',
-      playerId,
-      playerName,
-      timestamp: Date.now(),
-      r: row,
-      c: col,
-      value: noteValue,
-      note: true,
-      delete: del,
+      ...event,
     });
   }
 
   // Send chat message
-  async sendChatMessage(
-    gameId: string,
-    message: string,
-    playerId: string,
-    playerName: string,
-  ): Promise<void> {
+  async sendChatMessage(message: string): Promise<void> {
+    const gameId = this.gameId();
+    const playerId = this.playerId();
+    const playerName = this.playerName();
+    if (!gameId || !playerId || !playerName) {
+      throw new Error('Not connected to a game');
+    }
     const chatRef = ref(this.database, `games/${gameId}/chat`);
     const newMessageRef = push(chatRef);
 
@@ -298,9 +304,5 @@ export class CollaborationService {
 
   private generatePlayerId(): string {
     return `player_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-  }
-
-  private generatePuzzleHash(puzzle: number[][]): string {
-    return puzzle.flat().join('');
   }
 }

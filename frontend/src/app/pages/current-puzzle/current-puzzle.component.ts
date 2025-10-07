@@ -14,6 +14,7 @@ import { VictoryDialogComponent } from '@components/victory-dialog/victory-dialo
 import { SudokuTableComponent } from '@components/sudoku-table/sudoku-table.component';
 import { JsonPipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { CollaborationService } from '@services/collaboration/collaboration.service';
 
 @Component({
   selector: 'app-current-puzzle',
@@ -29,6 +30,7 @@ import { Router } from '@angular/router';
 export class CurrentPuzzleComponent {
   private firebaseService = inject(FirebaseService);
   private readonly router = inject(Router);
+  private readonly collaborationService = inject(CollaborationService);
 
   readonly originalPuzzle = signal<number[][] | null>(null);
   readonly solved = signal<number[][] | null>(null);
@@ -42,8 +44,6 @@ export class CurrentPuzzleComponent {
 
   readonly timeElapsed = signal(0);
   readonly timerInterval = signal<NodeJS.Timeout | null>(null);
-
-  readonly collaborationId = signal<string | undefined>(undefined);
 
   readonly loading = signal<boolean>(false);
   readonly victoryDialogClosed = signal<boolean>(false);
@@ -232,5 +232,53 @@ export class CurrentPuzzleComponent {
     this.noteTable.update((t) =>
       t.map((r) => r.map((notes) => notes.map(() => true))),
     );
+  };
+
+  readonly startCollaboration = () => {
+    const originalPuzzle = this.originalPuzzle();
+    const solution = this.solved();
+    const currentTable = this.table();
+    const noteTable = this.noteTable();
+    const hash = this.hash();
+    const difficulty = localStorage.getItem(
+      LOCAL_STORAGE_KEYS.CURRENT_DIFFICULTY,
+    ) as Difficulty;
+    const playerName =
+      localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME) ||
+      'Anonymous';
+    const playerId = localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID);
+    if (
+      !originalPuzzle ||
+      !solution ||
+      !currentTable ||
+      !noteTable ||
+      !difficulty ||
+      !hash
+    ) {
+      console.error('Missing data for collaboration');
+      return;
+    }
+    this.loading.set(true);
+    this.collaborationService
+      .createGame(
+        originalPuzzle,
+        solution,
+        currentTable,
+        noteTable,
+        difficulty,
+        hash,
+        playerName,
+        playerId || undefined,
+        this.timeElapsed(),
+      )
+      .then(({ gameId, playerId }) => {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID, playerId);
+        localStorage.setItem(
+          LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME,
+          playerName,
+        );
+        this.loading.set(false);
+        this.router.navigate(['/collaborate', gameId]);
+      });
   };
 }

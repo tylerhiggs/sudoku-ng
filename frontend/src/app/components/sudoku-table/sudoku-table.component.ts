@@ -35,6 +35,7 @@ export class SudokuTableComponent {
     value: number;
   }>();
   readonly quickPencil = output<void>();
+  readonly puzzleEvent = output<PuzzleEvent>();
 
   readonly noteMode = signal(false);
 

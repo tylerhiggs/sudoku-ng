@@ -13,4 +13,11 @@ export const routes: Routes = [
         (m) => m.CurrentPuzzleComponent,
       ),
   },
+  {
+    path: 'collaborate/:gameId',
+    loadComponent: () =>
+      import('@pages/collaborate/collaborate.component').then(
+        (m) => m.CollaborateComponent,
+      ),
+  },
 ];

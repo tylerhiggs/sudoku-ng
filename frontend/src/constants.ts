@@ -11,4 +11,7 @@ export const LOCAL_STORAGE_KEYS = {
   BATCHES_MEDIUM: 'batches-medium',
   BATCHES_HARD: 'batches-hard',
   BATCHES_EXPERT: 'batches-expert',
+
+  CURRENT_PLAYER_NAME: 'currentPlayerName',
+  CURRENT_PLAYER_ID: 'currentPlayerId',
 } as const;
