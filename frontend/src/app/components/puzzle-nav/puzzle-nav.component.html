@@ -1,0 +1,28 @@
+<header
+  class="flex w-full items-center justify-end gap-6 px-6 py-2 dark:bg-gray-800"
+>
+  <div class="font-bold dark:text-white" id="timer">
+    {{ timeString() }}
+  </div>
+  @if (collaborationId()) {
+    <div
+      class="rounded-md bg-green-100 px-2.5 py-1 text-sm font-medium text-green-800 dark:bg-green-900 dark:text-green-300"
+    >
+      Collaboration ID: {{ collaborationId() }}
+    </div>
+  } @else {
+    <button
+      tabindex="0"
+      class="cursor-pointer rounded-sm bg-gradient-to-br from-purple-500 to-indigo-500 px-4 py-2 font-bold text-white transition-all duration-300 hover:from-purple-600 hover:to-pink-600"
+    >
+      Collaborate
+    </button>
+  }
+  <button
+    tabindex="0"
+    class="cursor-pointer rounded-sm border border-gray-600 px-4 py-2 font-bold text-gray-600 hover:bg-gray-100 dark:border-gray-100 dark:text-gray-100 dark:hover:bg-gray-500"
+    (click)="navToHome.emit()"
+  >
+    Back
+  </button>
+</header>

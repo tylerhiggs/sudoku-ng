@@ -12,7 +12,7 @@ import {
   Difficulty,
   SudokuEntryFirebase,
   SudokuEntryIndexedDb,
-} from '../types';
+} from '@/../types';
 
 const BATCH_SIZE = 50;
 

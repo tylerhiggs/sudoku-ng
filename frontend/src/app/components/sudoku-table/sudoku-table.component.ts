@@ -10,7 +10,8 @@ import {
 } from '@angular/core';
 import { NumberButtonsComponent } from '../number-buttons/number-buttons.component';
 import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.component';
-import { SnackbarStore } from '../snackbar.store';
+import { SnackbarStore } from '@stores/snackbar.store';
+import { PuzzleEvent } from '@/../types';
 
 @Component({
   selector: 'app-sudoku-table',
@@ -36,15 +37,7 @@ export class SudokuTableComponent {
 
   readonly noteMode = signal(false);
 
-  readonly moveHistory = signal<
-    {
-      r: number;
-      c: number;
-      value: number;
-      note?: boolean;
-      delete?: boolean;
-    }[]
-  >([]);
+  readonly moveHistory = signal<PuzzleEvent[]>([]);
 
   readonly highlightedCell = signal({ r: 0, c: 0 });
 

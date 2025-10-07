@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { SnackbarStore } from '../snackbar.store';
+import { SnackbarStore } from '@stores/snackbar.store';
 
 @Component({
   selector: 'app-snackbar',

@@ -8,7 +8,9 @@ import { Component, computed, input, output } from '@angular/core';
 })
 export class PuzzleNavComponent {
   readonly timeElapsed = input.required<number>();
+  readonly collaborationId = input<string | undefined>(undefined);
   readonly navToHome = output<void>();
+  readonly collaborate = output<void>();
 
   readonly timeString = computed(() => {
     const time = this.timeElapsed();

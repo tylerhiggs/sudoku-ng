@@ -1,0 +1,35 @@
+<app-puzzle-nav
+  [timeElapsed]="timeElapsed()"
+  (navToHome)="reset(false)"
+></app-puzzle-nav>
+<main class="h-screen w-full p-4 dark:bg-gray-800 dark:text-white">
+  @if (solved() && originalPuzzle()) {
+    <div [attr.inert]="isVictoryDialogOpen() ? '' : null">
+      <app-sudoku-table
+        [originalTable]="originalPuzzle()!"
+        [solvedTable]="solved()!"
+        [noteTable]="noteTable()"
+        [table]="table()!"
+        (updateTable)="updateTable($event)"
+        (toggleNoteTable)="toggleNoteTable($event)"
+        (quickPencil)="quickPencil()"
+      ></app-sudoku-table>
+    </div>
+  } @else if (loading()) {
+    <div class="flex h-full items-center justify-center">
+      <div
+        class="loader h-32 w-32 rounded-full border-8 border-t-8 border-gray-200 ease-linear"
+      ></div>
+    </div>
+  } @else {
+    <p>Solved: {{ solved() | json }}</p>
+    <p>Original Puzzle: {{ originalPuzzle() | json }}</p>
+    <p>Loading: {{ loading() }}</p>
+    <p>Hash: {{ hash() | json }}</p>
+  }
+  <app-victory-dialog
+    [open]="isVictoryDialogOpen()"
+    (restart)="reset()"
+    (closeDialog)="victoryDialogClosed.set(true)"
+  ></app-victory-dialog>
+</main>

@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { expect, vi } from 'vitest';
 import { AppComponent } from './app.component';
-import { SnackbarStore } from './snackbar.store';
+import { SnackbarStore } from './stores/snackbar.store';
 import { within } from '@testing-library/dom';
-import { FirebaseService } from './firebase.service';
+import { FirebaseService } from './services/firebase.service';
 
 const localStorageMock = (() => {
   const currentPuzzle = [
