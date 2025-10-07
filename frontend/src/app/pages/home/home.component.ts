@@ -32,13 +32,11 @@ export class HomeComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      if (!this.pendingDifficulty()) {
+      const d = this.pendingDifficulty();
+      if (!d) {
         return;
       }
-      localStorage.setItem(
-        LOCAL_STORAGE_KEYS.CURRENT_DIFFICULTY,
-        JSON.stringify(this.pendingDifficulty()),
-      );
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_DIFFICULTY, d);
     });
   }
 
@@ -49,6 +47,7 @@ export class HomeComponent implements OnInit {
   readonly pendingDifficulty = signal<Difficulty | null>(null);
   readonly confirmationDialogOpen = signal(false);
   readonly loading = signal(false);
+
   readonly openPuzzle = async (difficulty: Difficulty, force = false) => {
     this.pendingDifficulty.set(difficulty);
     if (!force) {

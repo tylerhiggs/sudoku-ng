@@ -12,6 +12,7 @@ import { NumberButtonsComponent } from '../number-buttons/number-buttons.compone
 import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.component';
 import { SnackbarStore } from '@stores/snackbar.store';
 import { PuzzleEvent } from '@/../types';
+import { cn } from '@utils/cn';
 
 @Component({
   selector: 'app-sudoku-table',
@@ -296,4 +297,6 @@ export class SudokuTableComponent {
   readonly onNumberClick = (number: number) => {
     this.enterValue(String(number));
   };
+
+  readonly cn = cn;
 }

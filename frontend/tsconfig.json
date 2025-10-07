@@ -25,6 +25,7 @@
       "@services/*": ["app/services/*"],
       "@stores/*": ["app/stores/*"],
       "@pages/*": ["app/pages/*"],
+      "@utils/*": ["app/utils/*"],
       "@/*": ["app/*"]
     },
     "lib": ["ES2022", "dom"]
