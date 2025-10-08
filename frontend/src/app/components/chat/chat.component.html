@@ -1,0 +1,64 @@
+<div
+  class="rounded-xl border border-gray-300 bg-white p-4 shadow-md dark:border-gray-700 dark:bg-gray-900"
+>
+  <h2 class="mb-4 text-xl font-bold">Chat</h2>
+  <div
+    class="mb-4 h-64 w-full overflow-y-auto rounded border border-gray-300 p-2 dark:border-gray-700"
+    id="chat-messages"
+  >
+    @for (event of allEvents(); track event.id) {
+      @switch (event.type) {
+        @case ("chat") {
+          <div class="mb-2">
+            <span class="font-semibold">{{ event.playerName }}</span
+            >: {{ event.message }} ({{ event.timestamp | date: "shortTime" }})
+          </div>
+        }
+        @case ("playerJoin") {
+          <div class="mb-2 text-green-600">
+            <span class="font-semibold">{{ event.playerName }}</span> joined the
+            game ({{ event.timestamp | date: "shortTime" }})
+          </div>
+        }
+        @case ("playerLeave") {
+          <div class="mb-2 text-red-600">
+            <span class="font-semibold">{{ event.playerName }}</span> left the
+            game ({{ event.timestamp | date: "shortTime" }})
+          </div>
+        }
+        @case ("quickPencil") {
+          <div class="mb-2">
+            <span class="font-semibold">{{ event.playerName }}</span> used Quick
+            Pencil ⚡️✏️ ({{ event.timestamp | date: "shortTime" }})
+          </div>
+        }
+        @case ("cellUpdate") {
+          <div class="mb-2">
+            <span class="font-semibold">{{ event.playerName }}</span>
+            @if (event.delete) {
+              {{ " deleted " }}
+            } @else {
+              {{ " updated " }}
+            }
+            @if (event.note) {
+              note
+            } @else {
+              cell
+            }
+            at ({{ event.r }}, {{ event.c }}) to {{ event.value }} ({{
+              event.timestamp | date: "shortTime"
+            }})
+          </div>
+        }
+      }
+    }
+  </div>
+  <input
+    [value]="newMessage()"
+    (keydown)="keydown($event)"
+    (input)="input($event)"
+    type="text"
+    class="w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+    placeholder="Type a message..."
+  />
+</div>

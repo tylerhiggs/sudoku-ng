@@ -1,6 +1,7 @@
 <app-puzzle-nav
   [timeElapsed]="timeElapsed()"
   (navToHome)="reset(false)"
+  (collaborate)="startCollaboration()"
 ></app-puzzle-nav>
 <main class="h-screen w-full p-4 dark:bg-gray-800 dark:text-white">
   @if (solved() && originalPuzzle()) {

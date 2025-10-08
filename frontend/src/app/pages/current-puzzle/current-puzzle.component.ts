@@ -235,6 +235,7 @@ export class CurrentPuzzleComponent {
   };
 
   readonly startCollaboration = () => {
+    console.log('Starting collaboration');
     const originalPuzzle = this.originalPuzzle();
     const solution = this.solved();
     const currentTable = this.table();
@@ -278,6 +279,7 @@ export class CurrentPuzzleComponent {
           playerName,
         );
         this.loading.set(false);
+        console.log('Navigating to collaboration game:', gameId);
         this.router.navigate(['/collaborate', gameId]);
       });
   };

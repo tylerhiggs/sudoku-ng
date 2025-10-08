@@ -7,15 +7,18 @@ import {
   onValue,
   off,
   serverTimestamp,
+  stateChanges,
 } from '@angular/fire/database';
+import { LOCAL_STORAGE_KEYS } from '@/../constants';
 import { Observable } from 'rxjs';
 import type { Difficulty, PuzzleEvent } from 'types';
 
 export interface BaseEvent {
-  type: 'cellUpdate' | 'playerJoin' | 'playerLeave';
+  type: 'cellUpdate' | 'playerJoin' | 'playerLeave' | 'quickPencil';
   playerId: string;
   playerName: string;
   timestamp: number;
+  id: string;
 }
 
 export interface CellUpdateEvent extends BaseEvent, PuzzleEvent {
@@ -30,13 +33,22 @@ export interface PlayerLeaveEvent extends BaseEvent {
   type: 'playerLeave';
 }
 
-export type GameEvent = CellUpdateEvent | PlayerJoinEvent | PlayerLeaveEvent;
+export interface QuickPencilEvent extends BaseEvent {
+  type: 'quickPencil';
+}
+
+export type GameEvent =
+  | CellUpdateEvent
+  | PlayerJoinEvent
+  | PlayerLeaveEvent
+  | QuickPencilEvent;
 
 export interface ChatMessage {
   playerId: string;
   playerName: string;
   message: string;
   timestamp: number;
+  id: string;
 }
 
 export interface GameState {
@@ -54,6 +66,7 @@ export class CollaborationService {
   readonly playerId = signal<string | null>(null);
   readonly playerName = signal<string | null>(null);
   readonly gameId = signal<string | null>(null);
+  readonly joinedAt = signal<number | null>(null);
 
   /**
    *
@@ -89,7 +102,7 @@ export class CollaborationService {
       metadata: {
         createdAt: serverTimestamp(),
         initialTimeElapsed: initialTimeElapsed || 0,
-        createdBy: playerId,
+        createdBy: pId,
         difficulty,
         originalPuzzle,
         currentTable,
@@ -123,9 +136,14 @@ export class CollaborationService {
   // Join an existing game
   async joinGame(gameId: string, playerName: string, playerId?: string) {
     const pId = playerId || this.generatePlayerId();
+    if (!playerId) {
+      console.warn('No playerId provided, generating a new one');
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID, pId);
+    }
     this.playerId.set(pId);
     this.playerName.set(playerName);
     this.gameId.set(gameId);
+    this.joinedAt.set(Date.now());
 
     try {
       // Check if game exists and is active
@@ -135,7 +153,7 @@ export class CollaborationService {
       }
 
       // Add player to game
-      await set(ref(this.database, `games/${gameId}/players/${playerId}`), {
+      await set(ref(this.database, `games/${gameId}/players/${pId}`), {
         name: playerName,
         joinedAt: serverTimestamp(),
         isActive: true,
@@ -148,6 +166,7 @@ export class CollaborationService {
         playerId: pId,
         playerName,
         timestamp: Date.now(),
+        id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       });
 
       // Add to user's games list
@@ -170,7 +189,6 @@ export class CollaborationService {
     solution: number[][];
     createdAt: number;
     initialTimeElapsed: number;
-    createdBy: string;
     lastActivity: number;
   }> {
     const gameRef = ref(this.database, `games/${gameId}/metadata`);
@@ -183,6 +201,23 @@ export class CollaborationService {
         { onlyOnce: true },
       );
     });
+  }
+
+  async quickPencil(): Promise<void> {
+    const gameId = this.gameId();
+    const playerId = this.playerId();
+    const playerName = this.playerName();
+    if (!gameId || !playerId || !playerName) {
+      throw new Error('Not connected to a game');
+    }
+    await this.addGameEvent(gameId, {
+      type: 'quickPencil',
+      playerId,
+      playerName,
+      timestamp: Date.now(),
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+    });
+    await this.updateLastActivity(gameId);
   }
 
   // Update game state
@@ -206,6 +241,7 @@ export class CollaborationService {
       playerId,
       playerName,
       timestamp: Date.now(),
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       ...event,
     });
   }
@@ -246,45 +282,14 @@ export class CollaborationService {
     });
   }
 
-  // Subscribe to chat messages
-  subscribeToChat(gameId: string): Observable<ChatMessage[]> {
-    return new Observable((subscriber) => {
-      const chatRef = ref(this.database, `games/${gameId}/chat`);
-      const unsubscribe = onValue(chatRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const messages = Object.keys(data)
-            .map((key) => data[key])
-            .sort((a, b) => a.timestamp - b.timestamp);
-          subscriber.next(messages);
-        } else {
-          subscriber.next([]);
-        }
-      });
-
-      return () => off(chatRef, 'value', unsubscribe);
-    });
+  subscribeToChat(gameId: string) {
+    const chatRef = ref(this.database, `games/${gameId}/chat`);
+    return stateChanges(chatRef);
   }
 
-  // Subscribe to game events
-  subscribeToGameEvents(gameId: string): Observable<GameEvent[]> {
-    return new Observable((subscriber) => {
-      const eventsRef = ref(this.database, `games/${gameId}/events`);
-      const unsubscribe = onValue(eventsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const events = Object.keys(data)
-            .map((key) => data[key])
-            .sort((a, b) => a.timestamp - b.timestamp)
-            .slice(-50); // Keep only last 50 events
-          subscriber.next(events);
-        } else {
-          subscriber.next([]);
-        }
-      });
-
-      return () => off(eventsRef, 'value', unsubscribe);
-    });
+  subscribeToGameEvents(gameId: string) {
+    const eventsRef = ref(this.database, `games/${gameId}/events`);
+    return stateChanges(eventsRef);
   }
 
   // Helper methods

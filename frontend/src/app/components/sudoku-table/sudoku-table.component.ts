@@ -35,7 +35,6 @@ export class SudokuTableComponent {
     value: number;
   }>();
   readonly quickPencil = output<void>();
-  readonly puzzleEvent = output<PuzzleEvent>();
 
   readonly noteMode = signal(false);
 
@@ -45,6 +44,16 @@ export class SudokuTableComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // make sure no input or textarea is focused
+    const activeElement = document.activeElement;
+    if (
+      activeElement &&
+      (activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        (activeElement as HTMLElement).isContentEditable)
+    ) {
+      return;
+    }
     if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       this.onUndo();
