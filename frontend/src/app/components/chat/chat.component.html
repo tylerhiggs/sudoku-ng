@@ -12,34 +12,56 @@
     class="mb-4 h-64 w-full overflow-y-auto rounded border border-gray-300 p-2 dark:border-gray-700"
     id="chat-messages"
   >
-    @for (event of allEvents(); track event.id) {
+    @for (event of allEvents(); let i = $index; track trackByEvent(i, event)) {
       @switch (event.type) {
         @case ("chat") {
-          <div class="mb-2">
-            <span class="font-semibold">{{ event.playerName }}</span
-            >: {{ event.message }} ({{ event.timestamp | date: "shortTime" }})
+          <div
+            class="group mb-2 flex w-full flex-col gap-0.5"
+            [class]="{
+              'items-end': event.playerId === playerId,
+              'items-start': event.playerId !== playerId,
+            }"
+          >
+            <div class="flex justify-between gap-0.5 text-xs text-gray-400">
+              <span class="font-semibold">{{ event.playerName }}</span>
+              <span class="hidden group-hover:block"
+                >({{ event.timestamp | date: "shortTime" }})</span
+              >
+            </div>
+            <div class="rounded-lg border border-gray-500 px-1 py-0.5">
+              {{ event.message }}
+            </div>
           </div>
         }
         @case ("playerJoin") {
-          <div class="mb-2 text-gray-500">
+          <div class="group mb-2 text-emerald-500 dark:text-emerald-200">
             <span class="font-semibold">{{ event.playerName }}</span> joined the
-            game ({{ event.timestamp | date: "shortTime" }})
+            game
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
           </div>
         }
         @case ("playerLeave") {
-          <div class="mb-2 text-red-600">
+          <div class="group mb-2 text-red-600">
             <span class="font-semibold">{{ event.playerName }}</span> left the
-            game ({{ event.timestamp | date: "shortTime" }})
+            game
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
           </div>
         }
         @case ("quickPencil") {
-          <div class="mb-2">
-            <span class="font-semibold">{{ event.playerName }}</span> used Quick
-            Pencil ⚡️✏️ ({{ event.timestamp | date: "shortTime" }})
+          <div class="group mb-2 text-amber-300">
+            <span class="font-semibold">{{ event.playerName }}</span>
+            used Quick Pencil ⚡️✏️
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
           </div>
         }
         @case ("cellUpdate") {
-          <div class="mb-2">
+          <div class="group mb-2">
             <span class="font-semibold">{{ event.playerName }}</span>
             @if (event.delete) {
               {{ " deleted " }}
@@ -51,17 +73,29 @@
             } @else {
               cell
             }
-            at ({{ event.r }}, {{ event.c }}) to {{ event.value }} ({{
-              event.timestamp | date: "shortTime"
-            }})
+            at ({{ event.r }}, {{ event.c }}) to {{ event.value }}
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
           </div>
         }
         @case ("playerNameChange") {
-          <div class="mb-2 text-blue-600">
+          <div class="group mb-2 text-blue-600">
             <span class="font-semibold">{{ event.oldName }}</span> changed their
-            name to <span class="font-semibold">{{ event.newName }}</span> ({{
-              event.timestamp | date: "shortTime"
-            }})
+            name to <span class="font-semibold">{{ event.newName }}</span>
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+        @case ("puzzleComplete") {
+          <div
+            class="group mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+          >
+            We completed the puzzle! 🎉
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
           </div>
         }
       }

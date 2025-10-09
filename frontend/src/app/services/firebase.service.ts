@@ -13,6 +13,7 @@ import {
   SudokuEntryFirebase,
   SudokuEntryIndexedDb,
 } from '@/../types';
+import { LOCAL_STORAGE_KEYS } from '@/../constants';
 
 const BATCH_SIZE = 50;
 
@@ -62,6 +63,7 @@ export class FirebaseService {
     time: number,
     difficulty: Difficulty,
   ) {
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.CURRENT_NOTE_TABLE);
     await this.IndexedDbCompletedService.puzzleCompleted(
       hash,
       time,

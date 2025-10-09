@@ -3,11 +3,13 @@ import {
   Component,
   computed,
   effect,
+  HostListener,
   inject,
   input,
   model,
   OnDestroy,
   signal,
+  untracked,
 } from '@angular/core';
 
 import { LOCAL_STORAGE_KEYS } from '@/../constants';
@@ -22,7 +24,9 @@ import {
   type GameEvent,
 } from '@services/collaboration/collaboration.service';
 import { ChatComponent } from '@components/chat/chat.component';
-import { Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
+import { FirebaseService } from '@services/firebase.service';
+import { generateName } from '@utils/name-generator';
 @Component({
   selector: 'app-collaborate',
   imports: [
@@ -41,6 +45,7 @@ export class CollaborateComponent implements OnDestroy {
 
   private readonly collaborationService = inject(CollaborationService);
   private readonly router = inject(Router);
+  private readonly firebaseService = inject(FirebaseService);
 
   private eventSubscription: Subscription | null = null;
   private chatSubscription: Subscription | null = null;
@@ -73,7 +78,7 @@ export class CollaborateComponent implements OnDestroy {
         .joinGame(
           gameId,
           localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME) ||
-            'Anonymous',
+            generateName(),
           localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID) ||
             undefined,
         )
@@ -93,8 +98,7 @@ export class CollaborateComponent implements OnDestroy {
               Math.floor((Date.now() - metadata.createdAt) / 1000),
           );
           this.startTimer();
-        })
-        .then(() => {
+
           this.eventSubscription = this.collaborationService
             .subscribeToGameEvents(gameId)
             .subscribe((gameEvent) => {
@@ -118,7 +122,6 @@ export class CollaborateComponent implements OnDestroy {
                 return;
               }
               if (val.note) {
-                console.log('Applying note event', val);
                 this.toggleNoteTable(
                   {
                     r: val.r,
@@ -128,11 +131,48 @@ export class CollaborateComponent implements OnDestroy {
                   false,
                 );
               } else {
-                console.log('Applying cell update event', val);
                 this.updateTable(
                   { r: val.r, c: val.c, value: val.value },
                   false,
                 );
+                if (this.checkIsSolved(this.table(), this.solved())) {
+                  const endTime = this.gameEvents()
+                    .filter((e) => e.type === 'cellUpdate')
+                    .sort((a, b) => a.timestamp - b.timestamp)
+                    .at(-1)?.timestamp;
+                  const startTime = metadata.createdAt;
+                  const time =
+                    endTime && startTime
+                      ? Math.floor((endTime - startTime) / 1000)
+                      : null;
+                  this.stopTimer();
+                  if (!time) return;
+                  this.firebaseService.completePuzzle(
+                    this.hash()!,
+                    time,
+                    this.collaborationService.difficulty()!,
+                  );
+                  this.gameEvents.update((events) => {
+                    if (events.find((e) => e.type === 'puzzleComplete')) {
+                      return events;
+                    }
+                    const newEvents = [
+                      ...events,
+                      {
+                        type: 'puzzleComplete',
+                        playerId:
+                          this.collaborationService.playerId() || 'unknown',
+                        playerName:
+                          this.collaborationService.playerName() || 'Unknown',
+                        timestamp: val.timestamp + 1,
+                        id: `${Date.now()}_${Math.random()
+                          .toString(36)
+                          .substring(2, 11)}`,
+                      } as GameEvent,
+                    ];
+                    return newEvents;
+                  });
+                }
               }
             });
           this.chatSubscription = this.collaborationService
@@ -160,6 +200,29 @@ export class CollaborateComponent implements OnDestroy {
         return;
       }
       this.stopTimer();
+      untracked(() => {
+        if (this.gameEvents().find((e) => e.type === 'puzzleComplete')) {
+          return;
+        }
+        this.firebaseService.completePuzzle(
+          this.hash()!,
+          this.timeElapsed(),
+          this.collaborationService.difficulty()!,
+        );
+        this.gameEvents.update((events) => {
+          const newEvents = [
+            ...events,
+            {
+              type: 'puzzleComplete',
+              playerId: this.collaborationService.playerId() || 'unknown',
+              playerName: this.collaborationService.playerName() || 'Unknown',
+              timestamp: Date.now() + 1,
+              id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+            } as GameEvent,
+          ];
+          return newEvents;
+        });
+      });
     });
   }
 
@@ -169,7 +232,7 @@ export class CollaborateComponent implements OnDestroy {
     return (
       this.collaborationService.playerName() ||
       localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME) ||
-      'Anonymous'
+      generateName()
     );
   });
 
@@ -190,6 +253,9 @@ export class CollaborateComponent implements OnDestroy {
     },
     updateDb = true,
   ) => {
+    if (updateDb) {
+      this.collaborationService.logPuzzleEvent({ r, c, value });
+    }
     this.table.update((t) => {
       if (!t) {
         return t;
@@ -197,8 +263,6 @@ export class CollaborateComponent implements OnDestroy {
       t[r][c] = value;
       return [...t];
     });
-    if (!updateDb) return;
-    this.collaborationService.logPuzzleEvent({ r, c, value });
   };
 
   readonly toggleNoteTable = (
@@ -213,6 +277,9 @@ export class CollaborateComponent implements OnDestroy {
     },
     updateDb = true,
   ) => {
+    if (updateDb) {
+      this.collaborationService.logPuzzleEvent({ r, c, value, note: true });
+    }
     this.noteTable.update((t) => {
       if (!t) {
         return t;
@@ -220,18 +287,21 @@ export class CollaborateComponent implements OnDestroy {
       t[r][c][value] = !t[r][c][value];
       return [...t];
     });
-    if (!updateDb) return;
-    this.collaborationService.logPuzzleEvent({ r, c, value, note: true });
   };
 
-  readonly isSolved = computed(() => {
-    const table = this.table();
-    const solved = this.solved();
+  readonly checkIsSolved = (
+    table: number[][] | null,
+    solved: number[][] | null,
+  ) => {
     if (!table || !solved) {
       return false;
     }
     return table.every((r, i) => r.every((c, j) => c === solved[i][j]));
-  });
+  };
+
+  readonly isSolved = computed(() =>
+    this.checkIsSolved(this.table(), this.solved()),
+  );
 
   readonly reset = () => {
     this.router.navigate(['/']);
@@ -281,6 +351,14 @@ export class CollaborateComponent implements OnDestroy {
     if (this.eventSubscription) {
       this.eventSubscription.unsubscribe();
     }
-    // this.collaborationService.leaveGame();
+    if (this.chatSubscription) {
+      this.chatSubscription.unsubscribe();
+    }
+    this.collaborationService.leaveGame();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadHandler() {
+    this.collaborationService.leaveGame();
   }
 }

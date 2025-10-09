@@ -15,6 +15,7 @@ import { SudokuTableComponent } from '@components/sudoku-table/sudoku-table.comp
 import { JsonPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { CollaborationService } from '@services/collaboration/collaboration.service';
+import { generateName } from '@utils/name-generator';
 
 @Component({
   selector: 'app-current-puzzle',
@@ -28,7 +29,7 @@ import { CollaborationService } from '@services/collaboration/collaboration.serv
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CurrentPuzzleComponent {
-  private firebaseService = inject(FirebaseService);
+  private readonly firebaseService = inject(FirebaseService);
   private readonly router = inject(Router);
   private readonly collaborationService = inject(CollaborationService);
 
@@ -138,7 +139,7 @@ export class CurrentPuzzleComponent {
         try {
           this.firebaseService.completePuzzle(hash, time, difficulty);
         } catch (error) {
-          console.error('caught error in app.component.ts');
+          console.error('Unable to mark puzzle as complete:');
           console.error(error);
         }
       }
@@ -246,7 +247,7 @@ export class CurrentPuzzleComponent {
     ) as Difficulty;
     const playerName =
       localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME) ||
-      'Anonymous';
+      generateName();
     const playerId = localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID);
     if (
       !originalPuzzle ||
@@ -268,7 +269,6 @@ export class CurrentPuzzleComponent {
         noteTable,
         difficulty,
         hash,
-        playerName,
         playerId || undefined,
         this.timeElapsed(),
       )

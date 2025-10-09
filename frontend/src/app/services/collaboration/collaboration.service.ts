@@ -17,7 +17,8 @@ export interface BaseEvent {
     | 'playerJoin'
     | 'playerLeave'
     | 'quickPencil'
-    | 'playerNameChange';
+    | 'playerNameChange'
+    | 'puzzleComplete';
   playerId: string;
   playerName: string;
   timestamp: number;
@@ -46,12 +47,17 @@ export interface PlayerNameChangeEvent extends BaseEvent {
   newName: string;
 }
 
+export type PuzzleCompleteEvent = BaseEvent & {
+  type: 'puzzleComplete';
+};
+
 export type GameEvent =
   | CellUpdateEvent
   | PlayerJoinEvent
   | PlayerLeaveEvent
   | QuickPencilEvent
-  | PlayerNameChangeEvent;
+  | PlayerNameChangeEvent
+  | PuzzleCompleteEvent;
 
 export interface ChatMessage {
   playerId: string;
@@ -77,6 +83,7 @@ export class CollaborationService {
   readonly playerName = signal<string | null>(null);
   readonly gameId = signal<string | null>(null);
   readonly joinedAt = signal<number | null>(null);
+  readonly difficulty = signal<Difficulty | null>(null);
 
   /**
    *
@@ -95,7 +102,6 @@ export class CollaborationService {
     noteTable: boolean[][][],
     difficulty: string,
     hash: number,
-    playerName: string,
     playerId?: string,
     initialTimeElapsed?: number,
   ): Promise<{ gameId: string; playerId: string }> {
@@ -103,10 +109,6 @@ export class CollaborationService {
     const newGameRef = push(gamesRef);
     const gameId = newGameRef.key!;
     const pId = playerId || this.generatePlayerId();
-
-    this.playerId.set(pId);
-    this.playerName.set(playerName);
-    this.gameId.set(gameId);
 
     const gameData = {
       metadata: {
@@ -125,14 +127,7 @@ export class CollaborationService {
       state: {
         completedAt: null,
       },
-      players: {
-        [pId]: {
-          name: playerName,
-          joinedAt: serverTimestamp(),
-          isActive: true,
-          lastSeen: serverTimestamp(),
-        },
-      },
+      players: {},
     };
 
     await set(newGameRef, gameData);
@@ -149,16 +144,40 @@ export class CollaborationService {
       console.warn('No playerId provided, generating a new one');
       localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID, pId);
     }
-    this.playerId.set(pId);
-    this.playerName.set(playerName);
-    this.gameId.set(gameId);
-    this.joinedAt.set(Date.now());
 
     try {
       // Check if game exists and is active
       const gameSnapshot = await this.getGameSnapshot(gameId);
       if (!gameSnapshot) {
         throw new Error('Game not found or inactive');
+      }
+
+      if (gameId === this.gameId()) {
+        return gameSnapshot;
+      }
+
+      this.difficulty.set(gameSnapshot.difficulty);
+      this.playerId.set(pId);
+      this.playerName.set(playerName);
+      this.gameId.set(gameId);
+      this.joinedAt.set(Date.now());
+
+      // Check if player is already in the game
+      const playerSnapshot = await new Promise<{ isActive: boolean }>(
+        (resolve) => {
+          onValue(
+            ref(this.database, `games/${gameId}/players/${pId}`),
+            (snapshot) => {
+              resolve(snapshot.val());
+            },
+            { onlyOnce: true },
+          );
+        },
+      );
+      console.log('Player snapshot:', playerSnapshot);
+
+      if (playerSnapshot?.isActive) {
+        return gameSnapshot;
       }
 
       // Add player to game
@@ -186,6 +205,31 @@ export class CollaborationService {
       console.error('Failed to join game:', error);
       return false;
     }
+  }
+
+  async leaveGame(): Promise<void> {
+    const gameId = this.gameId();
+    const playerId = this.playerId();
+    const playerName = this.playerName();
+    if (!gameId || !playerId || !playerName) {
+      console.warn('Not connected to a game');
+      return;
+    }
+
+    // Remove player from game
+    set(ref(this.database, `games/${gameId}/players/${playerId}`), {
+      isActive: false,
+      lastSeen: serverTimestamp(),
+    });
+
+    // Add leave event
+    this.addGameEvent(gameId, {
+      type: 'playerLeave',
+      playerId,
+      playerName,
+      timestamp: Date.now(),
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+    });
   }
 
   private async getGameSnapshot(gameId: string): Promise<{
@@ -230,6 +274,7 @@ export class CollaborationService {
   }
 
   async logPuzzleEvent(event: PuzzleEvent): Promise<void> {
+    const timestamp = Date.now();
     const gameId = this.gameId();
     const playerId = this.playerId();
     const playerName = this.playerName();
@@ -248,7 +293,7 @@ export class CollaborationService {
       type: 'cellUpdate',
       playerId,
       playerName,
-      timestamp: Date.now(),
+      timestamp,
       id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       ...event,
     });
