@@ -28,6 +28,8 @@
           <app-chat
             [events]="gameEvents()"
             [chats]="chatMessages()"
+            [playerName]="playerName()"
+            (updatePlayerName)="updatePlayerName($event)"
             (sendMessage)="sendMessage($event)"
           ></app-chat>
         </div>

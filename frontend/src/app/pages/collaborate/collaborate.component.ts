@@ -165,6 +165,18 @@ export class CollaborateComponent implements OnDestroy {
 
   readonly gameEvents = signal<GameEvent[]>([]);
   readonly chatMessages = signal<ChatMessage[]>([]);
+  readonly playerName = computed(() => {
+    return (
+      this.collaborationService.playerName() ||
+      localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME) ||
+      'Anonymous'
+    );
+  });
+
+  readonly updatePlayerName = (name: string) => {
+    this.collaborationService.updatePlayerName(name);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME, name);
+  };
 
   readonly updateTable = (
     {

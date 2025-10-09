@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   input,
+  linkedSignal,
   output,
   signal,
 } from '@angular/core';
@@ -22,9 +23,28 @@ export class ChatComponent {
   readonly events = input<GameEvent[]>([]);
   readonly chats = input<ChatMessage[]>([]);
 
+  readonly playerName = input<string>('Anonymous');
+
+  readonly updatePlayerName = output<string>();
   readonly sendMessage = output<string>();
 
   readonly newMessage = signal('');
+  readonly newPlayerName = linkedSignal(this.playerName);
+  readonly playerNameDebounceTimeout = signal<NodeJS.Timeout | null>(null);
+
+  readonly onUpdatePlayerName = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    this.newPlayerName.set(target.value);
+    if (this.playerNameDebounceTimeout()) {
+      clearTimeout(this.playerNameDebounceTimeout()!);
+    }
+    this.playerNameDebounceTimeout.set(
+      setTimeout(() => {
+        this.updatePlayerName.emit(this.newPlayerName().trim());
+        this.playerNameDebounceTimeout.set(null);
+      }, 1000),
+    );
+  };
 
   readonly onSendMessage = () => {
     const message = this.newMessage().trim();
@@ -32,7 +52,6 @@ export class ChatComponent {
       return;
     }
     this.sendMessage.emit(message);
-    console.log('Sent message:', message);
     this.newMessage.set('');
   };
 

@@ -1,7 +1,13 @@
 <div
   class="rounded-xl border border-gray-300 bg-white p-4 shadow-md dark:border-gray-700 dark:bg-gray-900"
 >
-  <h2 class="mb-4 text-xl font-bold">Chat</h2>
+  <h2 class="mb-4 flex items-center gap-1 text-xl font-bold">
+    <input
+      class="field-sizing-content rounded-lg border border-dashed border-gray-500 p-2"
+      [value]="newPlayerName()"
+      (input)="onUpdatePlayerName($event)"
+    />'s Chat
+  </h2>
   <div
     class="mb-4 h-64 w-full overflow-y-auto rounded border border-gray-300 p-2 dark:border-gray-700"
     id="chat-messages"
@@ -15,7 +21,7 @@
           </div>
         }
         @case ("playerJoin") {
-          <div class="mb-2 text-green-600">
+          <div class="mb-2 text-gray-500">
             <span class="font-semibold">{{ event.playerName }}</span> joined the
             game ({{ event.timestamp | date: "shortTime" }})
           </div>
@@ -46,6 +52,14 @@
               cell
             }
             at ({{ event.r }}, {{ event.c }}) to {{ event.value }} ({{
+              event.timestamp | date: "shortTime"
+            }})
+          </div>
+        }
+        @case ("playerNameChange") {
+          <div class="mb-2 text-blue-600">
+            <span class="font-semibold">{{ event.oldName }}</span> changed their
+            name to <span class="font-semibold">{{ event.newName }}</span> ({{
               event.timestamp | date: "shortTime"
             }})
           </div>

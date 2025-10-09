@@ -5,16 +5,19 @@ import {
   push,
   set,
   onValue,
-  off,
   serverTimestamp,
   stateChanges,
 } from '@angular/fire/database';
 import { LOCAL_STORAGE_KEYS } from '@/../constants';
-import { Observable } from 'rxjs';
 import type { Difficulty, PuzzleEvent } from 'types';
 
 export interface BaseEvent {
-  type: 'cellUpdate' | 'playerJoin' | 'playerLeave' | 'quickPencil';
+  type:
+    | 'cellUpdate'
+    | 'playerJoin'
+    | 'playerLeave'
+    | 'quickPencil'
+    | 'playerNameChange';
   playerId: string;
   playerName: string;
   timestamp: number;
@@ -37,11 +40,18 @@ export interface QuickPencilEvent extends BaseEvent {
   type: 'quickPencil';
 }
 
+export interface PlayerNameChangeEvent extends BaseEvent {
+  type: 'playerNameChange';
+  oldName: string;
+  newName: string;
+}
+
 export type GameEvent =
   | CellUpdateEvent
   | PlayerJoinEvent
   | PlayerLeaveEvent
-  | QuickPencilEvent;
+  | QuickPencilEvent
+  | PlayerNameChangeEvent;
 
 export interface ChatMessage {
   playerId: string;
@@ -133,7 +143,6 @@ export class CollaborationService {
     return { gameId, playerId: pId };
   }
 
-  // Join an existing game
   async joinGame(gameId: string, playerName: string, playerId?: string) {
     const pId = playerId || this.generatePlayerId();
     if (!playerId) {
@@ -220,7 +229,6 @@ export class CollaborationService {
     await this.updateLastActivity(gameId);
   }
 
-  // Update game state
   async logPuzzleEvent(event: PuzzleEvent): Promise<void> {
     const gameId = this.gameId();
     const playerId = this.playerId();
@@ -246,7 +254,6 @@ export class CollaborationService {
     });
   }
 
-  // Send chat message
   async sendChatMessage(message: string): Promise<void> {
     const gameId = this.gameId();
     const playerId = this.playerId();
@@ -267,19 +274,36 @@ export class CollaborationService {
     await this.updateLastActivity(gameId);
   }
 
-  // Subscribe to game state changes
-  subscribeToGameState(gameId: string): Observable<GameState> {
-    return new Observable((subscriber) => {
-      const stateRef = ref(this.database, `games/${gameId}/state`);
-      const unsubscribe = onValue(stateRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          subscriber.next(data);
-        }
-      });
+  async updatePlayerName(newName: string): Promise<void> {
+    const gameId = this.gameId();
+    const playerId = this.playerId();
+    const oldName = this.playerName();
+    if (!gameId || !playerId || !oldName) {
+      throw new Error('Not connected to a game');
+    }
+    if (newName === oldName) {
+      return;
+    }
 
-      return () => off(stateRef, 'value', unsubscribe);
+    // Update name in players list
+    const playerNameRef = ref(
+      this.database,
+      `games/${gameId}/players/${playerId}/name`,
+    );
+    await set(playerNameRef, newName);
+
+    // Log name change event
+    await this.addGameEvent(gameId, {
+      type: 'playerNameChange',
+      playerId,
+      playerName: newName,
+      timestamp: Date.now(),
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+      oldName,
+      newName,
     });
+
+    this.playerName.set(newName);
   }
 
   subscribeToChat(gameId: string) {
