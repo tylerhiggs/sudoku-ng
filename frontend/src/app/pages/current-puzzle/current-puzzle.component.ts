@@ -43,6 +43,10 @@ export class CurrentPuzzleComponent {
     ),
   );
 
+  readonly difficulty = localStorage.getItem(
+    LOCAL_STORAGE_KEYS.CURRENT_DIFFICULTY,
+  ) as Difficulty;
+
   readonly timeElapsed = signal(0);
   readonly timerInterval = signal<NodeJS.Timeout | null>(null);
 

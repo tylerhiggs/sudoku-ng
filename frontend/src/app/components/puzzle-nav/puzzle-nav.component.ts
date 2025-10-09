@@ -1,16 +1,24 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
+import { SnackbarStore } from '@stores/snackbar.store';
+import { cn } from '@utils/cn';
 
 @Component({
   selector: 'app-puzzle-nav',
-  imports: [],
   templateUrl: './puzzle-nav.component.html',
-  providers: [],
 })
 export class PuzzleNavComponent {
   readonly timeElapsed = input.required<number>();
-  readonly collaborationId = input<string | undefined>(undefined);
+  readonly isCollaboration = input<boolean>(false);
+  readonly difficulty = input<string | undefined>(undefined);
   readonly navToHome = output<void>();
   readonly collaborate = output<void>();
+
+  readonly snackbarStore = inject(SnackbarStore);
+
+  readonly shareCollaborationLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    this.snackbarStore.enqueue('Link copied to clipboard', 'info');
+  };
 
   readonly timeString = computed(() => {
     const time = this.timeElapsed();
@@ -19,4 +27,6 @@ export class PuzzleNavComponent {
     const seconds = time % 60;
     return `${hours ? hours + ':' : ''}${hours ? minutes.toString().padStart(2, '0') : minutes}:${seconds.toString().padStart(2, '0')}`;
   });
+
+  readonly cn = cn;
 }

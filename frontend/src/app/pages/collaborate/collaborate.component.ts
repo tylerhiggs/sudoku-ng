@@ -235,6 +235,9 @@ export class CollaborateComponent implements OnDestroy {
       generateName()
     );
   });
+  readonly difficulty = computed(() => {
+    return this.collaborationService.difficulty() || undefined;
+  });
 
   readonly updatePlayerName = (name: string) => {
     this.collaborationService.updatePlayerName(name);

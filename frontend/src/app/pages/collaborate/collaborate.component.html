@@ -3,6 +3,8 @@
     <div class="flex-initial">
       <app-puzzle-nav
         [timeElapsed]="timeElapsed()"
+        [difficulty]="difficulty()"
+        [isCollaboration]="true"
         (navToHome)="reset()"
       ></app-puzzle-nav>
     </div>
