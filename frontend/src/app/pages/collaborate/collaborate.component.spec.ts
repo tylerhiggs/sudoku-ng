@@ -54,6 +54,7 @@ const serviceMock = {
   playerId: () => '1',
   playerName: () => '1',
   gameId: () => '1',
+  difficulty: () => 'easy',
   createGame: vi.fn().mockResolvedValue({ gameId: '1', playerId: '1' }),
   joinGame: vi.fn().mockResolvedValue({
     difficulty: 'easy',
