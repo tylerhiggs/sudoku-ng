@@ -84,6 +84,8 @@ export class CollaborationService {
   readonly gameId = signal<string | null>(null);
   readonly joinedAt = signal<number | null>(null);
   readonly difficulty = signal<Difficulty | null>(null);
+  readonly initialTimeElapsed = signal<number>(0);
+  readonly createdAt = signal<number | null>(null);
 
   /**
    *
@@ -161,6 +163,8 @@ export class CollaborationService {
       this.playerName.set(playerName);
       this.gameId.set(gameId);
       this.joinedAt.set(Date.now());
+      this.initialTimeElapsed.set(gameSnapshot.initialTimeElapsed || 0);
+      this.createdAt.set(gameSnapshot.createdAt || null);
 
       // Check if player is already in the game
       const playerSnapshot = await new Promise<{ isActive: boolean }>(
@@ -174,7 +178,6 @@ export class CollaborationService {
           );
         },
       );
-      console.log('Player snapshot:', playerSnapshot);
 
       if (playerSnapshot?.isActive) {
         return gameSnapshot;
@@ -243,6 +246,7 @@ export class CollaborationService {
     createdAt: number;
     initialTimeElapsed: number;
     lastActivity: number;
+    completedAt?: number | null;
   }> {
     const gameRef = ref(this.database, `games/${gameId}/metadata`);
     return new Promise((resolve) => {
@@ -349,6 +353,31 @@ export class CollaborationService {
     });
 
     this.playerName.set(newName);
+  }
+
+  async completePuzzle(): Promise<void> {
+    const gameId = this.gameId();
+    const playerId = this.playerId();
+    const playerName = this.playerName();
+    if (!gameId || !playerId || !playerName) {
+      throw new Error('Not connected to a game');
+    }
+
+    // Update completedAt in game state
+    const completedAtRef = ref(
+      this.database,
+      `games/${gameId}/metadata/completedAt`,
+    );
+    await set(completedAtRef, serverTimestamp());
+
+    this.addGameEvent(gameId, {
+      type: 'puzzleComplete',
+      playerId,
+      playerName,
+      timestamp: Date.now(),
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+    });
+    await this.updateLastActivity(gameId);
   }
 
   subscribeToChat(gameId: string) {
