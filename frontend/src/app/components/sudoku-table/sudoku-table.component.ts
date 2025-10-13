@@ -215,11 +215,12 @@ export class SudokuTableComponent {
     const table = this.table();
     if (!table) return;
     const currentValue = table[row][col];
-    if (
-      this.originalTable() &&
-      this.originalTable()![row][col] === currentValue
-    ) {
+    if (this.table() && this.table()![row][col] === currentValue) {
       console.error('Cell is already filled with the correct value');
+      this.snackbarStore.enqueue(
+        'Cell is already filled with the correct value',
+        'warning',
+      );
       return;
     }
     this.updateTable.emit({ r: row, c: col, value: 0 });
@@ -245,24 +246,7 @@ export class SudokuTableComponent {
   };
 
   readonly erase = () => {
-    const { r, c } = this.highlightedCell();
-    if (r === -1 && c === -1) return;
-    if (this.originalTable() && this.originalTable()![r][c] !== 0) return;
-    const noteTable = this.noteTable();
-    if (!noteTable) return;
-    const prev = this.highlightedCellValue();
-    this.updateTable.emit({ r, c, value: 0 });
-    if (prev)
-      this.moveHistory.update((h) => {
-        h.push({ r, c, value: prev, delete: true });
-        return [...h];
-      });
-    noteTable[r][c].forEach((_, i) => {
-      this.moveHistory.update((h) => {
-        h.push({ r, c, value: i + 1, note: true, delete: true });
-        return [...h];
-      });
-    });
+    this.removeValue();
   };
 
   readonly onFocus = (row: number, col: number) => {

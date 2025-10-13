@@ -50,10 +50,13 @@
   </div>
 } @else {
   <div
-    class="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-800"
+    class="flex h-screen w-full items-center justify-center dark:bg-gray-800"
   >
-    <div
-      class="loader h-32 w-32 rounded-full border-8 border-t-8 border-gray-200 ease-linear"
-    ></div>
+    <div class="text-center">
+      <div
+        class="mb-4 inline-block h-16 w-16 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+      ></div>
+      <p class="text-lg text-gray-700 dark:text-gray-300">Loading puzzle...</p>
+    </div>
   </div>
 }

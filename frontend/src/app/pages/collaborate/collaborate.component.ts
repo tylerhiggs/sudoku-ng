@@ -6,7 +6,6 @@ import {
   HostListener,
   inject,
   input,
-  model,
   OnDestroy,
   signal,
 } from '@angular/core';
@@ -40,7 +39,6 @@ import { generateName } from '@utils/name-generator';
 })
 export class CollaborateComponent implements OnDestroy {
   readonly gameId = input<string>();
-  readonly loading = model<boolean>(false);
 
   private readonly collaborationService = inject(CollaborationService);
   private readonly router = inject(Router);
@@ -49,6 +47,7 @@ export class CollaborateComponent implements OnDestroy {
   private eventSubscription: Subscription | null = null;
   private chatSubscription: Subscription | null = null;
 
+  readonly loading = signal(true);
   readonly originalPuzzle = signal<number[][] | null>(null);
   readonly solved = signal<number[][] | null>(null);
   readonly table = signal<number[][] | null>(null);
@@ -62,7 +61,7 @@ export class CollaborateComponent implements OnDestroy {
   readonly timeElapsed = signal(0);
   readonly timerInterval = signal<NodeJS.Timeout | null>(null);
 
-  readonly victoryDialogClosed = signal<boolean>(false);
+  readonly victoryDialogClosed = signal(false);
   readonly isVictoryDialogOpen = computed(() => {
     return !this.victoryDialogClosed() && this.isSolved() && !this.loading();
   });
@@ -111,12 +110,12 @@ export class CollaborateComponent implements OnDestroy {
               const joinedAt = this.collaborationService.joinedAt();
               if (
                 (val.playerId === this.collaborationService.playerId() &&
-                  joinedAt &&
-                  val.timestamp > joinedAt) ||
+                  (!joinedAt || val.timestamp > joinedAt)) ||
                 (val.type !== 'cellUpdate' &&
                   val.type !== 'quickPencil' &&
                   val.type !== 'puzzleComplete')
               ) {
+                this.makeConsistent(val);
                 return;
               }
               if (val.type === 'quickPencil') {
@@ -337,6 +336,46 @@ export class CollaborateComponent implements OnDestroy {
       ? Math.round((completedAt - createdAt) / 1000)
       : (this.collaborationService.initialTimeElapsed() || 0) +
           Math.round((Date.now() - createdAt) / 1000);
+  };
+
+  /**
+   * Applies events in order based on timestamp/sequence number.
+   * Firebase already provides ordering guarantees, so we collect
+   * events and apply them in sorted order.
+   */
+  readonly makeConsistent = (gameEvent: GameEvent) => {
+    const allEvents = [...this.gameEvents(), gameEvent].sort(
+      (a, b) => a.timestamp - b.timestamp,
+    );
+
+    // Rebuild state from scratch from original puzzle
+    const freshTable = this.originalPuzzle()!.map((row) => [...row]);
+    const freshNotes = Array.from({ length: 9 }, () =>
+      Array.from({ length: 9 }, () => Array(9).fill(false)),
+    );
+
+    for (const event of allEvents) {
+      if (event.type === 'cellUpdate') {
+        if (event.note) {
+          freshNotes[event.r][event.c][event.value] =
+            !freshNotes[event.r][event.c][event.value];
+        } else {
+          freshTable[event.r][event.c] = event.value;
+        }
+      }
+      if (event.type === 'quickPencil') {
+        freshNotes.forEach((r) =>
+          r.forEach((notes) => notes.forEach((_, i) => (notes[i] = true))),
+        );
+      }
+      if (event.type === 'puzzleComplete') {
+        // stop processing events after puzzle is complete
+        break;
+      }
+    }
+
+    this.table.set(freshTable);
+    this.noteTable.set(freshNotes);
   };
 
   ngOnDestroy(): void {
