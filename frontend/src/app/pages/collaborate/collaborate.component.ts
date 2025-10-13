@@ -95,12 +95,7 @@ export class CollaborateComponent implements OnDestroy {
           const completedAt = this.gameEvents().find(
             (e) => e.type === 'puzzleComplete',
           )?.timestamp;
-          this.timeElapsed.set(
-            completedAt
-              ? Math.floor((completedAt - metadata.createdAt) / 1000)
-              : (metadata.initialTimeElapsed || 0) +
-                  Math.floor((Date.now() - metadata.createdAt) / 1000),
-          );
+          this.timeElapsed.set(this.computeTimeElapsed());
           if (!completedAt) {
             this.startTimer();
           }
@@ -140,6 +135,7 @@ export class CollaborateComponent implements OnDestroy {
                     ? Math.floor((endTime - startTime) / 1000)
                     : null;
                 this.stopTimer();
+                this.timeElapsed.set(this.computeTimeElapsed());
                 if (!time) return;
                 this.firebaseService.completePuzzle(
                   this.hash()!,
@@ -312,19 +308,12 @@ export class CollaborateComponent implements OnDestroy {
     });
   };
   private startTimer() {
-    if (this.gameEvents().some((e) => e.type === 'puzzleComplete')) {
+    if (this.checkIsSolved(this.table(), this.solved())) {
       return;
     }
     this.timerInterval.set(
       setInterval(() => {
-        this.timeElapsed.set(
-          this.collaborationService.initialTimeElapsed() +
-            Math.round(
-              (Date.now() -
-                (this.collaborationService.createdAt() || Date.now())) /
-                1000,
-            ),
-        );
+        this.timeElapsed.set(this.computeTimeElapsed());
       }, 1000),
     );
   }
@@ -335,6 +324,20 @@ export class CollaborateComponent implements OnDestroy {
       clearInterval(timerInterval);
     }
   }
+
+  private readonly computeTimeElapsed = () => {
+    const completedAt = this.gameEvents().find(
+      (e) => e.type === 'puzzleComplete',
+    )?.timestamp;
+    const createdAt = this.collaborationService.createdAt();
+    if (!createdAt) {
+      return 0;
+    }
+    return completedAt
+      ? Math.round((completedAt - createdAt) / 1000)
+      : (this.collaborationService.initialTimeElapsed() || 0) +
+          Math.round((Date.now() - createdAt) / 1000);
+  };
 
   ngOnDestroy(): void {
     this.stopTimer();
