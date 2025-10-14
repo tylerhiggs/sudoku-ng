@@ -3,6 +3,7 @@
 >
   <div
     class="grid aspect-square w-full max-w-3xl grid-cols-9 grid-rows-9 gap-0"
+    data-testid="sudoku-table"
   >
     @for (row of table(); let r = $index; track r) {
       @for (cell of row; let c = $index; track c) {
@@ -67,6 +68,7 @@
           } @else {
             <div
               class="relative grid aspect-square w-full grid-cols-3 grid-rows-3 gap-0 bg-transparent"
+              [attr.data-testid]="'cell-' + r + '-' + c + '-notes'"
             >
               @for (noted of noteTable()[r][c]; let i = $index; track i) {
                 <div

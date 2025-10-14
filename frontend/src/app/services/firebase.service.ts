@@ -74,23 +74,25 @@ export class FirebaseService {
 
   public async tryPopulateLocalUnsolvedStore() {
     const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
-    difficulties.forEach(async (difficulty) => {
-      let count = 0;
-      try {
-        count =
-          await this.IndexedDbCompletedService.getUnsolvedCount(difficulty);
-      } catch (error) {
-        console.error(error);
-      }
-      if (count >= MIN_PUZZLES[difficulty]) return;
-      const puzzles = await this.getNewPuzzles(difficulty);
+    await Promise.all(
+      difficulties.map(async (difficulty) => {
+        let count = 0;
+        try {
+          count =
+            await this.IndexedDbCompletedService.getUnsolvedCount(difficulty);
+        } catch (error) {
+          console.error(error);
+        }
+        if (count >= MIN_PUZZLES[difficulty]) return;
+        const puzzles = await this.getNewPuzzles(difficulty);
 
-      if (!puzzles) return;
-      await this.IndexedDbCompletedService.populateUnsolved(
-        puzzles,
-        difficulty,
-      );
-    });
+        if (!puzzles) return;
+        await this.IndexedDbCompletedService.populateUnsolved(
+          puzzles,
+          difficulty,
+        );
+      }),
+    );
   }
 
   public async getNewPuzzles(difficulty: Difficulty) {

@@ -38,13 +38,10 @@ export class ChatComponent implements OnInit {
       const events = this.events();
       const isAtBottom = this.isScrolledToBottom();
 
-      console.log('Checking scroll position');
-
       if (!isAtBottom && (chats.length || events.length)) {
         return;
       }
 
-      console.log('Scrolling to bottom');
       const timeout = setTimeout(() => {
         this.scrollToBottom();
       }, 0);

@@ -108,56 +108,51 @@ export class CollaborateComponent implements OnDestroy {
                 return newEvents;
               });
               const joinedAt = this.collaborationService.joinedAt();
+
+              // Skip events from ourselves that happened before we joined (replay)
               if (
-                (val.playerId === this.collaborationService.playerId() &&
-                  (!joinedAt || val.timestamp > joinedAt)) ||
-                (val.type !== 'cellUpdate' &&
-                  val.type !== 'quickPencil' &&
-                  val.type !== 'puzzleComplete')
+                val.playerId === this.collaborationService.playerId() &&
+                joinedAt &&
+                val.timestamp <= joinedAt
+              ) {
+                return;
+              }
+
+              // For cellUpdate, quickPencil, and puzzleComplete events, use makeConsistent
+              // to ensure all players have the same state regardless of event order
+              if (
+                val.type === 'cellUpdate' ||
+                val.type === 'quickPencil' ||
+                val.type === 'puzzleComplete'
               ) {
                 this.makeConsistent(val);
+
+                // Handle completion logic
+                if (val.type === 'puzzleComplete') {
+                  const endTime = this.gameEvents()
+                    .filter((e) => e.type === 'cellUpdate')
+                    .sort((a, b) => a.timestamp - b.timestamp)
+                    .at(-1)?.timestamp;
+                  const startTime = metadata.createdAt;
+                  const time =
+                    endTime && startTime
+                      ? Math.floor((endTime - startTime) / 1000)
+                      : null;
+                  this.stopTimer();
+                  this.timeElapsed.set(this.computeTimeElapsed());
+                  if (time) {
+                    this.firebaseService.completePuzzle(
+                      this.hash()!,
+                      time,
+                      this.collaborationService.difficulty()!,
+                    );
+                  }
+                }
                 return;
               }
-              if (val.type === 'quickPencil') {
-                console.log('Applying quick pencil event', val);
-                this.quickPencil(false);
-                return;
-              }
-              if (val.type === 'puzzleComplete') {
-                const endTime = this.gameEvents()
-                  .filter((e) => e.type === 'cellUpdate')
-                  .sort((a, b) => a.timestamp - b.timestamp)
-                  .at(-1)?.timestamp;
-                const startTime = metadata.createdAt;
-                const time =
-                  endTime && startTime
-                    ? Math.floor((endTime - startTime) / 1000)
-                    : null;
-                this.stopTimer();
-                this.timeElapsed.set(this.computeTimeElapsed());
-                if (!time) return;
-                this.firebaseService.completePuzzle(
-                  this.hash()!,
-                  time,
-                  this.collaborationService.difficulty()!,
-                );
-                return;
-              }
-              if (val.note) {
-                this.toggleNoteTable(
-                  {
-                    r: val.r,
-                    c: val.c,
-                    value: val.value,
-                  },
-                  false,
-                );
-              } else {
-                this.updateTable(
-                  { r: val.r, c: val.c, value: val.value },
-                  false,
-                );
-              }
+
+              // For other event types (playerJoin, etc), also use makeConsistent
+              this.makeConsistent(val);
             });
           this.chatSubscription = this.collaborationService
             .subscribeToChat(gameId)
@@ -344,9 +339,15 @@ export class CollaborateComponent implements OnDestroy {
    * events and apply them in sorted order.
    */
   readonly makeConsistent = (gameEvent: GameEvent) => {
-    const allEvents = [...this.gameEvents(), gameEvent].sort(
-      (a, b) => a.timestamp - b.timestamp,
-    );
+    const allEvents = [
+      ...this.gameEvents().filter((e) => e.id !== gameEvent.id),
+      gameEvent,
+    ].sort((a, b) => {
+      if (a.timestamp === b.timestamp) {
+        return a.id.localeCompare(b.id);
+      }
+      return a.timestamp - b.timestamp;
+    });
 
     // Rebuild state from scratch from original puzzle
     const freshTable = this.originalPuzzle()!.map((row) => [...row]);
@@ -376,6 +377,7 @@ export class CollaborateComponent implements OnDestroy {
 
     this.table.set(freshTable);
     this.noteTable.set(freshNotes);
+    this.gameEvents.set(allEvents);
   };
 
   ngOnDestroy(): void {

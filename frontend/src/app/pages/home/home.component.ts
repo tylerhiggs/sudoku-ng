@@ -21,7 +21,10 @@ import { Router, RouterLink } from '@angular/router';
 export class HomeComponent implements OnInit {
   ngOnInit(): void {
     try {
-      this.firebaseService.tryPopulateLocalUnsolvedStore();
+      this.loading.set(true);
+      this.firebaseService.tryPopulateLocalUnsolvedStore().then(() => {
+        this.loading.set(false);
+      });
     } catch (error) {
       console.error(error);
     }
@@ -46,7 +49,7 @@ export class HomeComponent implements OnInit {
   readonly currentPuzzleExists = signal(false);
   readonly pendingDifficulty = signal<Difficulty | null>(null);
   readonly confirmationDialogOpen = signal(false);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
 
   readonly openPuzzle = async (difficulty: Difficulty, force = false) => {
     this.pendingDifficulty.set(difficulty);

@@ -128,8 +128,7 @@ export class SudokuTableComponent {
     }
     const value = Number(strValue);
     if (isNaN(value)) {
-      console.error('Input is not a number');
-      this.snackbarStore.enqueue('Input is not a number', 'warning');
+      console.warn('Input is not a number');
       return;
     }
     if (value < 1 || value > 9) {

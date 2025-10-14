@@ -3,6 +3,7 @@
 >
   <h2 class="mb-4 flex items-center gap-1 text-xl font-bold">
     <input
+      data-testid="player-name-input"
       class="field-sizing-content rounded-lg border border-dashed border-gray-500 p-2"
       [value]="newPlayerName()"
       (input)="onUpdatePlayerName($event)"
@@ -102,6 +103,8 @@
     }
   </div>
   <input
+    data-testid="chat-input"
+    aria-label="Chat input"
     [value]="newMessage()"
     (keydown)="keydown($event)"
     (input)="input($event)"
