@@ -6,11 +6,12 @@
       <div
         [class]="
           cn('rounded-xl border px-2 py-0.5 font-semibold uppercase', {
-            'border-emerald-800 bg-emerald-950 text-green-500':
+            'border-emerald-500 bg-emerald-100 text-green-500 dark:border-emerald-800 dark:bg-emerald-950':
               difficulty() === 'easy',
-            'border-amber-800 bg-amber-950 text-amber-500':
+            'border-amber-500 bg-amber-100 text-amber-500 dark:border-amber-800 dark:bg-amber-950':
               difficulty() === 'medium',
-            'border-rose-700 bg-red-950 text-rose-600': difficulty() === 'hard',
+            'border-rose-500 bg-rose-100 text-rose-600 dark:border-rose-700 dark:bg-rose-950':
+              difficulty() === 'hard',
             'bg-black text-white': difficulty() === 'expert',
           })
         "

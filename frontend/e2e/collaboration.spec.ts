@@ -1,18 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-
-// Duplicate the constants we need from src to avoid importing from src
-// which can cause issues with Vitest trying to process e2e files
-const LOCAL_STORAGE_KEYS = {
-  CURRENT_PUZZLE: 'currentPuzzle',
-  CURRENT_SOLVED: 'currentSolved',
-  CURRENT_TABLE: 'currentTable',
-  CURRENT_NOTE_TABLE: 'currentNoteTable',
-  CURRENT_HASH: 'currentHash',
-  CURRENT_TIME: 'currentTime',
-  CURRENT_DIFFICULTY: 'currentDifficulty',
-  CURRENT_PLAYER_ID: 'currentPlayerId',
-  CURRENT_PLAYER_NAME: 'currentPlayerName',
-} as const;
+import { LOCAL_STORAGE_KEYS } from '../src/constants';
 
 /**
  * Helper function to wait for a specific cell value to appear

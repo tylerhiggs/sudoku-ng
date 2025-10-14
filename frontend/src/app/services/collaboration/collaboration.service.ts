@@ -146,6 +146,12 @@ export class CollaborationService {
       console.warn('No playerId provided, generating a new one');
       localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_ID, pId);
     }
+    const storedName = localStorage.getItem(
+      LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME,
+    );
+    if (!storedName) {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYER_NAME, playerName);
+    }
 
     try {
       // Check if game exists and is active
