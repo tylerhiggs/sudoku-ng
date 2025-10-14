@@ -12,3 +12,17 @@ export interface SudokuEntryIndexedDb {
   hash: string;
   difficulty: Difficulty;
 }
+
+export interface PuzzleEvent {
+  r: number;
+  c: number;
+  value: number;
+  note?: boolean;
+  delete?: boolean;
+}
+
+export interface AsyncPuzzleEvent extends PuzzleEvent {
+  playerId: string;
+  timestamp: number;
+  playerName: string;
+}

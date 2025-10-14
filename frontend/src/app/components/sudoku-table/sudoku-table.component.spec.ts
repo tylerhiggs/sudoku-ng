@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { expect, vi } from 'vitest';
 import { SudokuTableComponent } from './sudoku-table.component';
-import { SnackbarStore } from '../snackbar.store';
+import { SnackbarStore } from '@stores/snackbar.store';
 describe('SudokuTableComponent', () => {
   it('should render sudoku table and emit events', async () => {
     const user = userEvent.setup();

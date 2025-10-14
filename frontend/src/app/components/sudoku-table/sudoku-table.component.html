@@ -1,0 +1,118 @@
+<div
+  class="flex h-full w-full flex-col items-center justify-center gap-12 sm:flex-row"
+>
+  <div
+    class="grid aspect-square w-full max-w-3xl grid-cols-9 grid-rows-9 gap-0"
+    data-testid="sudoku-table"
+  >
+    @for (row of table(); let r = $index; track r) {
+      @for (cell of row; let c = $index; track c) {
+        <button
+          [attr.data-testid]="'cell-' + r + '-' + c"
+          (click)="onFocus(r, c)"
+          [class]="
+            cn(
+              'cell-hover group relative flex aspect-square w-full items-center justify-center border border-slate-300 p-0 hover:bg-blue-200 sm:text-lg md:text-2xl xl:text-3xl dark:border-slate-800 dark:bg-gray-700 dark:hover:bg-violet-300 dark:hover:text-slate-600',
+              {
+                'cell-same-number': lightBlueHighlighted(r, c),
+                'cell-same-column':
+                  lightlyHighlighted(r, c) && !lightBlueHighlighted(r, c),
+                'note-mode': noteMode(),
+                'not-hover:bg-emerald-200 dark:not-hover:bg-emerald-400':
+                  highlightedCell().r === r &&
+                  highlightedCell().c === c &&
+                  noteMode(),
+                'not-hover:bg-blue-200 dark:not-hover:bg-violet-400':
+                  highlightedCell().r === r &&
+                  highlightedCell().c === c &&
+                  !noteMode(),
+                'not-hover:not-dark:bg-white':
+                  highlightedCell().r !== r || highlightedCell().c !== c,
+                'border-t-slate-500 dark:border-t-slate-100': r % 3 === 0,
+                'border-b-slate-500 dark:border-b-slate-100': r === 8,
+                'border-l-slate-500 dark:border-l-slate-100': c % 3 === 0,
+                'border-r-slate-500 dark:border-r-slate-100': c === 8,
+                'text-red-500': errorCell(r, c),
+              }
+            )
+          "
+        >
+          @if (
+            originalTable() &&
+            originalTable()![r] &&
+            originalTable()![r][c] !== 0
+          ) {
+            {{ cell }}
+          } @else if (
+            cell !== 0 &&
+            solvedTable() &&
+            solvedTable()![r] &&
+            cell === solvedTable()![r][c]
+          ) {
+            <div
+              class="text-blue-500 dark:text-blue-300 group-hover:dark:text-blue-800"
+              [class]="
+                cn(
+                  'text-blue-500 dark:text-blue-300 group-hover:dark:text-blue-800',
+                  {
+                    'dark:text-blue-800':
+                      highlightedCell().r === r && highlightedCell().c === c,
+                  }
+                )
+              "
+            >
+              {{ cell }}
+            </div>
+          } @else if (cell !== 0) {
+            <div class="text-red-500">{{ cell }}</div>
+          } @else {
+            <div
+              class="relative grid aspect-square w-full grid-cols-3 grid-rows-3 gap-0 bg-transparent"
+              [attr.data-testid]="'cell-' + r + '-' + c + '-notes'"
+            >
+              @for (noted of noteTable()[r][c]; let i = $index; track i) {
+                <div
+                  [attr.data-testid]="'note-' + r + '-' + c + '-' + (i + 1)"
+                  class=""
+                  [class]="
+                    cn('relative flex items-center justify-center text-xs', {
+                      'bg-blue-100 dark:bg-violet-400':
+                        !noteMode() &&
+                        noted &&
+                        noteHighlighted(i + 1) &&
+                        displayNote(r, c, i + 1),
+                      'bg-emerald-100 dark:bg-emerald-400 dark:text-slate-100':
+                        noteMode() &&
+                        noted &&
+                        noteHighlighted(i + 1) &&
+                        displayNote(r, c, i + 1),
+                    })
+                  "
+                >
+                  @if (noted && displayNote(r, c, i + 1)) {
+                    {{ i + 1 }}
+                  }
+                </div>
+              }
+            </div>
+          }
+        </button>
+      }
+    }
+  </div>
+
+  <div class="flex flex-col items-center gap-2 sm:flex-row sm:gap-12">
+    <app-sudoku-controls
+      [(noteMode)]="noteMode"
+      (undo)="onUndo()"
+      (erase)="erase()"
+      (quickPencil)="quickPencil.emit()"
+    ></app-sudoku-controls>
+
+    <app-number-buttons
+      [numLeft]="numLeft()"
+      [noteMode]="noteMode()"
+      (numberClick)="onNumberClick($event)"
+    ></app-number-buttons>
+  </div>
+</div>

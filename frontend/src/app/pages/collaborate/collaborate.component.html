@@ -1,0 +1,62 @@
+@if (!loading()) {
+  <div class="fixed flex h-screen w-full flex-col">
+    <div class="flex-initial">
+      <app-puzzle-nav
+        [timeElapsed]="timeElapsed()"
+        [difficulty]="difficulty()"
+        [isCollaboration]="true"
+        (navToHome)="reset()"
+      ></app-puzzle-nav>
+    </div>
+    <main
+      class="grid h-full w-full flex-auto grid-cols-12 gap-4 p-4 dark:bg-gray-800 dark:text-white"
+    >
+      @if (solved() && originalPuzzle()) {
+        <div
+          [attr.inert]="isVictoryDialogOpen() ? '' : null"
+          class="col-span-12 md:col-span-8"
+        >
+          <app-sudoku-table
+            [originalTable]="originalPuzzle()!"
+            [solvedTable]="solved()!"
+            [noteTable]="noteTable()"
+            [table]="table()!"
+            (updateTable)="updateTable($event)"
+            (toggleNoteTable)="toggleNoteTable($event)"
+            (quickPencil)="quickPencil()"
+          ></app-sudoku-table>
+        </div>
+        <div class="col-span-4 hidden md:block">
+          <app-chat
+            [events]="gameEvents()"
+            [chats]="chatMessages()"
+            [playerName]="playerName()"
+            (updatePlayerName)="updatePlayerName($event)"
+            (sendMessage)="sendMessage($event)"
+          ></app-chat>
+        </div>
+      } @else {
+        <p>Solved: {{ solved() | json }}</p>
+        <p>Original Puzzle: {{ originalPuzzle() | json }}</p>
+        <p>Loading: {{ loading() }}</p>
+        <p>Hash: {{ hash() | json }}</p>
+      }
+      <app-victory-dialog
+        [open]="isVictoryDialogOpen()"
+        (restart)="reset()"
+        (closeDialog)="victoryDialogClosed.set(true)"
+      ></app-victory-dialog>
+    </main>
+  </div>
+} @else {
+  <div
+    class="flex h-screen w-full items-center justify-center dark:bg-gray-800"
+  >
+    <div class="text-center">
+      <div
+        class="mb-4 inline-block h-16 w-16 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+      ></div>
+      <p class="text-lg text-gray-700 dark:text-gray-300">Loading puzzle...</p>
+    </div>
+  </div>
+}

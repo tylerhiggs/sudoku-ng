@@ -1,0 +1,115 @@
+<div
+  class="rounded-xl border border-gray-300 bg-white p-4 shadow-md dark:border-gray-700 dark:bg-gray-900"
+>
+  <h2 class="mb-4 flex items-center gap-1 text-xl font-bold">
+    <input
+      data-testid="player-name-input"
+      class="field-sizing-content rounded-lg border border-dashed border-gray-500 p-2"
+      [value]="newPlayerName()"
+      (input)="onUpdatePlayerName($event)"
+    />'s Chat
+  </h2>
+  <div
+    class="mb-4 h-64 w-full overflow-y-auto rounded border border-gray-300 p-2 dark:border-gray-700"
+    id="chat-messages"
+  >
+    @for (event of allEvents(); let i = $index; track trackByEvent(i, event)) {
+      @switch (event.type) {
+        @case ("chat") {
+          <div
+            class="group mb-2 flex w-full flex-col gap-0.5"
+            [class]="{
+              'items-end': event.playerId === playerId,
+              'items-start': event.playerId !== playerId,
+            }"
+          >
+            <div class="flex justify-between gap-0.5 text-xs text-gray-400">
+              <span class="font-semibold">{{ event.playerName }}</span>
+              <span class="hidden group-hover:block"
+                >({{ event.timestamp | date: "shortTime" }})</span
+              >
+            </div>
+            <div class="rounded-lg border border-gray-500 px-1 py-0.5">
+              {{ event.message }}
+            </div>
+          </div>
+        }
+        @case ("playerJoin") {
+          <div class="group mb-2 text-emerald-500 dark:text-emerald-200">
+            <span class="font-semibold">{{ event.playerName }}</span> joined the
+            game
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+        @case ("playerLeave") {
+          <div class="group mb-2 text-red-600">
+            <span class="font-semibold">{{ event.playerName }}</span> left the
+            game
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+        @case ("quickPencil") {
+          <div class="group mb-2 text-amber-300">
+            <span class="font-semibold">{{ event.playerName }}</span>
+            used Quick Pencil ⚡️✏️
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+        @case ("cellUpdate") {
+          <div class="group mb-2">
+            <span class="font-semibold">{{ event.playerName }}</span>
+            @if (event.delete) {
+              {{ " deleted " }}
+            } @else {
+              {{ " updated " }}
+            }
+            @if (event.note) {
+              note
+            } @else {
+              cell
+            }
+            at ({{ event.r }}, {{ event.c }}) to {{ event.value }}
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+        @case ("playerNameChange") {
+          <div class="group mb-2 text-blue-600">
+            <span class="font-semibold">{{ event.oldName }}</span> changed their
+            name to <span class="font-semibold">{{ event.newName }}</span>
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+        @case ("puzzleComplete") {
+          <div
+            class="group mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+          >
+            We completed the puzzle! 🎉
+            <span class="invisible group-hover:visible"
+              >({{ event.timestamp | date: "shortTime" }})</span
+            >
+          </div>
+        }
+      }
+    }
+  </div>
+  <input
+    data-testid="chat-input"
+    aria-label="Chat input"
+    [value]="newMessage()"
+    (keydown)="keydown($event)"
+    (input)="input($event)"
+    type="text"
+    class="w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+    placeholder="Type a message..."
+  />
+</div>

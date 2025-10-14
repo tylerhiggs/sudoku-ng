@@ -12,7 +12,8 @@ import {
   Difficulty,
   SudokuEntryFirebase,
   SudokuEntryIndexedDb,
-} from '../types';
+} from '@/../types';
+import { LOCAL_STORAGE_KEYS } from '@/../constants';
 
 const BATCH_SIZE = 50;
 
@@ -62,6 +63,7 @@ export class FirebaseService {
     time: number,
     difficulty: Difficulty,
   ) {
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.CURRENT_NOTE_TABLE);
     await this.IndexedDbCompletedService.puzzleCompleted(
       hash,
       time,
@@ -72,23 +74,25 @@ export class FirebaseService {
 
   public async tryPopulateLocalUnsolvedStore() {
     const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
-    difficulties.forEach(async (difficulty) => {
-      let count = 0;
-      try {
-        count =
-          await this.IndexedDbCompletedService.getUnsolvedCount(difficulty);
-      } catch (error) {
-        console.error(error);
-      }
-      if (count >= MIN_PUZZLES[difficulty]) return;
-      const puzzles = await this.getNewPuzzles(difficulty);
+    await Promise.all(
+      difficulties.map(async (difficulty) => {
+        let count = 0;
+        try {
+          count =
+            await this.IndexedDbCompletedService.getUnsolvedCount(difficulty);
+        } catch (error) {
+          console.error(error);
+        }
+        if (count >= MIN_PUZZLES[difficulty]) return;
+        const puzzles = await this.getNewPuzzles(difficulty);
 
-      if (!puzzles) return;
-      await this.IndexedDbCompletedService.populateUnsolved(
-        puzzles,
-        difficulty,
-      );
-    });
+        if (!puzzles) return;
+        await this.IndexedDbCompletedService.populateUnsolved(
+          puzzles,
+          difficulty,
+        );
+      }),
+    );
   }
 
   public async getNewPuzzles(difficulty: Difficulty) {

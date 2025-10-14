@@ -10,7 +10,9 @@ import {
 } from '@angular/core';
 import { NumberButtonsComponent } from '../number-buttons/number-buttons.component';
 import { SudokuControlsComponent } from '../sudoku-controls/sudoku-controls.component';
-import { SnackbarStore } from '../snackbar.store';
+import { SnackbarStore } from '@stores/snackbar.store';
+import { PuzzleEvent } from '@/../types';
+import { cn } from '@utils/cn';
 
 @Component({
   selector: 'app-sudoku-table',
@@ -36,20 +38,22 @@ export class SudokuTableComponent {
 
   readonly noteMode = signal(false);
 
-  readonly moveHistory = signal<
-    {
-      r: number;
-      c: number;
-      value: number;
-      note?: boolean;
-      delete?: boolean;
-    }[]
-  >([]);
+  readonly moveHistory = signal<PuzzleEvent[]>([]);
 
   readonly highlightedCell = signal({ r: 0, c: 0 });
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // make sure no input or textarea is focused
+    const activeElement = document.activeElement;
+    if (
+      activeElement &&
+      (activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        (activeElement as HTMLElement).isContentEditable)
+    ) {
+      return;
+    }
     if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       this.onUndo();
@@ -124,8 +128,7 @@ export class SudokuTableComponent {
     }
     const value = Number(strValue);
     if (isNaN(value)) {
-      console.error('Input is not a number');
-      this.snackbarStore.enqueue('Input is not a number', 'warning');
+      console.warn('Input is not a number');
       return;
     }
     if (value < 1 || value > 9) {
@@ -211,11 +214,12 @@ export class SudokuTableComponent {
     const table = this.table();
     if (!table) return;
     const currentValue = table[row][col];
-    if (
-      this.originalTable() &&
-      this.originalTable()![row][col] === currentValue
-    ) {
+    if (this.table() && this.table()![row][col] === currentValue) {
       console.error('Cell is already filled with the correct value');
+      this.snackbarStore.enqueue(
+        'Cell is already filled with the correct value',
+        'warning',
+      );
       return;
     }
     this.updateTable.emit({ r: row, c: col, value: 0 });
@@ -241,24 +245,7 @@ export class SudokuTableComponent {
   };
 
   readonly erase = () => {
-    const { r, c } = this.highlightedCell();
-    if (r === -1 && c === -1) return;
-    if (this.originalTable() && this.originalTable()![r][c] !== 0) return;
-    const noteTable = this.noteTable();
-    if (!noteTable) return;
-    const prev = this.highlightedCellValue();
-    this.updateTable.emit({ r, c, value: 0 });
-    if (prev)
-      this.moveHistory.update((h) => {
-        h.push({ r, c, value: prev, delete: true });
-        return [...h];
-      });
-    noteTable[r][c].forEach((_, i) => {
-      this.moveHistory.update((h) => {
-        h.push({ r, c, value: i + 1, note: true, delete: true });
-        return [...h];
-      });
-    });
+    this.removeValue();
   };
 
   readonly onFocus = (row: number, col: number) => {
@@ -303,4 +290,6 @@ export class SudokuTableComponent {
   readonly onNumberClick = (number: number) => {
     this.enterValue(String(number));
   };
+
+  readonly cn = cn;
 }

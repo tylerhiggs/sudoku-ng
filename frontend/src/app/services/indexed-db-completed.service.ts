@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Difficulty, SudokuEntryIndexedDb } from '../types';
+import { Difficulty, SudokuEntryIndexedDb } from '@/../types';
 
 @Injectable({
   providedIn: 'root',
@@ -124,8 +124,22 @@ export class IndexedDbCompletedService {
     time: number,
     difficulty: Difficulty,
   ): Promise<void> {
-    await this.addRowSolved(hash, time);
-    await this.removeUnsolved(hash, difficulty);
+    try {
+      await this.removeUnsolved(hash, difficulty);
+    } catch (error) {
+      console.error(
+        'Failed to remove unsolved puzzle:',
+        error,
+        'with difficulty',
+        difficulty,
+      );
+    }
+
+    try {
+      await this.addRowSolved(hash, time);
+    } catch (error) {
+      console.error('Failed to add solved puzzle to table, skipping:', error);
+    }
   }
 
   async getUnsolvedCount(difficulty: Difficulty): Promise<number> {

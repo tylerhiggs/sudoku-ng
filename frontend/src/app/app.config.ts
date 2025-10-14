@@ -2,15 +2,16 @@ import {
   ApplicationConfig,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { routes } from './app.routes';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { getDatabase, provideDatabase } from '@angular/fire/database';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideZonelessChangeDetection(),
     provideFirebaseApp(() =>
       initializeApp({
@@ -21,8 +22,10 @@ export const appConfig: ApplicationConfig = {
         authDomain: 'sudoku-6fbd2.firebaseapp.com',
         messagingSenderId: '659641408003',
         measurementId: 'G-S5ZV5RSP9J',
+        databaseURL: 'https://sudoku-6fbd2-default-rtdb.firebaseio.com',
       }),
     ),
     provideFirestore(() => getFirestore()),
+    provideDatabase(() => getDatabase()),
   ],
 };
