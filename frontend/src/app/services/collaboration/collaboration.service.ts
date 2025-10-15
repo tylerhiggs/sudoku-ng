@@ -7,6 +7,10 @@ import {
   onValue,
   serverTimestamp,
   stateChanges,
+  orderByChild,
+  endAt,
+  query,
+  equalTo,
 } from '@angular/fire/database';
 import { LOCAL_STORAGE_KEYS } from '@/../constants';
 import type { Difficulty, PuzzleEvent } from 'types';
@@ -136,6 +140,8 @@ export class CollaborationService {
 
     // Add to user's games list
     await set(ref(this.database, `userGames/${playerId}/${gameId}`), true);
+
+    this.deleteAllOldGames();
 
     return { gameId, playerId: pId };
   }
@@ -413,5 +419,54 @@ export class CollaborationService {
 
   private generatePlayerId(): string {
     return `player_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  private deleteAllOldGames() {
+    const gamesRef = ref(this.database, 'games');
+    // Use orderByChild to query only games with old lastActivity timestamps
+    const cutoffTime = Date.now() - 48 * 60 * 60 * 1000; // 48 hours ago
+    const oldGamesQuery = query(
+      gamesRef,
+      orderByChild('metadata/lastActivity'),
+      endAt(cutoffTime),
+    );
+
+    const inactiveGamesQuery = query(
+      gamesRef,
+      orderByChild('metadata/isActive'),
+      equalTo(false),
+    );
+
+    // Handle stale games
+    onValue(
+      oldGamesQuery,
+      async (snapshot) => {
+        const games = snapshot.val();
+        if (!games) return;
+
+        const deletePromises = Object.keys(games).map((gameId) =>
+          set(ref(this.database, `games/${gameId}`), null),
+        );
+
+        await Promise.all(deletePromises);
+      },
+      { onlyOnce: true },
+    );
+
+    // Handle inactive games
+    onValue(
+      inactiveGamesQuery,
+      async (snapshot) => {
+        const games = snapshot.val();
+        if (!games) return;
+
+        const deletePromises = Object.keys(games).map((gameId) =>
+          set(ref(this.database, `games/${gameId}`), null),
+        );
+
+        await Promise.all(deletePromises);
+      },
+      { onlyOnce: true },
+    );
   }
 }
