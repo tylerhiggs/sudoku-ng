@@ -16,4 +16,5 @@ export class SudokuControlsComponent {
   readonly undo = output<void>();
   readonly erase = output<void>();
   readonly quickPencil = output<void>();
+  readonly hint = output<void>();
 }

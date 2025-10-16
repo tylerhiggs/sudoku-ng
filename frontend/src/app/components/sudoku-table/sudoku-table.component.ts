@@ -248,6 +248,43 @@ export class SudokuTableComponent {
     this.removeValue();
   };
 
+  readonly hint = () => {
+    const { r: row, c: col } = this.highlightedCell();
+    if (row === -1 || col === -1) {
+      console.error('No cell is selected');
+      this.snackbarStore.enqueue('No cell is selected', 'warning');
+      return;
+    }
+    if (this.originalTable() && this.originalTable()![row][col] !== 0) {
+      console.error('Cell is not empty');
+      this.snackbarStore.enqueue('Cell is not empty', 'warning');
+      return;
+    }
+    const solvedTable = this.solvedTable();
+    if (!solvedTable) {
+      console.error('No solution available');
+      this.snackbarStore.enqueue('No solution available', 'error');
+      return;
+    }
+    const table = this.table();
+    if (!table) return;
+    const currentValue = table[row][col];
+    if (currentValue === solvedTable[row][col]) {
+      console.error('Cell is already correct');
+      this.snackbarStore.enqueue('Cell is already correct', 'warning');
+      return;
+    }
+    this.updateTable.emit({ r: row, c: col, value: solvedTable[row][col] });
+    this.moveHistory.update((h) => {
+      h.push({
+        r: row,
+        c: col,
+        value: solvedTable[row][col],
+      });
+      return [...h];
+    });
+  };
+
   readonly onFocus = (row: number, col: number) => {
     this.highlightedCell.set({ r: row, c: col });
   };
